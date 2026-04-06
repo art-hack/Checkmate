@@ -26,19 +26,28 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
   1. Parse project name from `@Project` (supports spaces).
   2. Prompt user to select a specific section (checklist) from a dropdown.
 - Autocomplete: Shows project suggestions when typing `@`.
+- **Inbox Routing:** Tasks added without a project tag land in the system-level **"Inbox"** project.
+
+### Project & Task Migration
+- **Project Deletion:** Sidebar supports project removal with a safety confirmation dialog.
+- **Task Migration:** Root tasks can be moved between projects and sections. Migrating a root task automatically moves all its nested subtasks to maintain hierarchy.
 
 ### Done Workflow
 - **Strategic Separation:** Horizontal divider between "Active Checklists" and "Mission Accomplished".
 - **Robustness:** Orphaned tasks (whose checklists were deleted) are automatically grouped under "Uncategorized".
+- **Achievement States:** Projects at 100% progress display a "Checkmate" (Crown) badge in the sidebar with unique styling.
 
 ## 🚀 Current Status
 
 - ✅ React/Vite/TS/PWA Boilerplate.
 - ✅ Firebase Auth & Firestore setup (Environment variables secured).
-- ✅ Sidebar project management (Create/Switch).
+- ✅ Sidebar project management (Create/Switch/Delete).
 - ✅ Task & Checklist editing (Double-click/Icons).
 - ✅ Responsive wide-screen layout.
-- ✅ Recursive TaskItem components.
+- ✅ Recursive TaskItem components with Project Migration.
+- ✅ Inbox system for unassigned tasks.
+- ✅ Achievement badges for completed projects.
+
 - ✅ UI Refinements: Hover-based project label hiding on the Board and improved action button spacing.
 
 ## 🛠️ Next Steps / Roadmap

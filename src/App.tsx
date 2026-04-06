@@ -8,11 +8,13 @@ import { CheckSquare } from 'lucide-react';
 
 // Mock Data
 const MOCK_PROJECTS: Project[] = [
+  { id: 'inbox', name: 'Inbox', ownerId: 'u1', createdAt: new Date(), completed: false, progress: 0 },
   { id: '1', name: 'Website Redesign', ownerId: 'u1', createdAt: new Date(), completed: false, progress: 45 },
   { id: '2', name: 'App Backend', ownerId: 'u1', createdAt: new Date(), completed: false, progress: 100 },
 ];
 
 const MOCK_CHECKLISTS: Checklist[] = [
+  { id: 'c-inbox', name: 'General', projectId: 'inbox', order: 1 },
   { id: 'c1', name: 'Design', projectId: '1', order: 1 },
   { id: 'c2', name: 'Content', projectId: '1', order: 2 },
   { id: 'c3', name: 'Development', projectId: '2', order: 1 },
@@ -56,8 +58,8 @@ function App() {
       id: Math.random().toString(36).substr(2, 9),
       text,
       completed: false,
-      projectId,
-      checklistId,
+      projectId: projectId || 'inbox',
+      checklistId: checklistId || (checklists.find(c => c.projectId === (projectId || 'inbox'))?.id || 'c-inbox'),
       parentId: null,
       ownerId: user?.uid || 'u1',
       order: tasks.length + 1,
@@ -72,6 +74,16 @@ function App() {
 
   const handleEditTask = (taskId: string, newText: string) => {
     setTasks(tasks.map(t => t.id === taskId ? { ...t, text: newText } : t));
+  };
+
+  const handleMoveTask = (taskId: string, newProjectId: string, newChecklistId: string) => {
+    const findDescendantIds = (parentId: string): string[] => {
+      const children = tasks.filter(t => t.parentId === parentId);
+      return children.reduce((acc, child) => [...acc, child.id, ...findDescendantIds(child.id)], [] as string[]);
+    };
+
+    const idsToMove = [taskId, ...findDescendantIds(taskId)];
+    setTasks(tasks.map(t => idsToMove.includes(t.id) ? { ...t, projectId: newProjectId, checklistId: newChecklistId } : t));
   };
 
   const handleAddSubtask = (parentId: string, text: string) => {
@@ -103,7 +115,6 @@ function App() {
     };
     setProjects([...projects, newProject]);
     
-    // Create a default checklist for the new project
     const newChecklist: Checklist = {
       id: Math.random().toString(36).substr(2, 9),
       name: 'General',
@@ -112,6 +123,14 @@ function App() {
     };
     setChecklists([...checklists, newChecklist]);
     setActiveProjectId(newProject.id);
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    if (projectId === 'inbox') return;
+    setProjects(projects.filter(p => p.id !== projectId));
+    setChecklists(checklists.filter(c => c.projectId !== projectId));
+    setTasks(tasks.filter(t => t.projectId !== projectId));
+    if (activeProjectId === projectId) setActiveProjectId(null);
   };
 
   if (loading) {
@@ -152,7 +171,9 @@ function App() {
         onAddTask={handleAddTask}
         onToggleTask={handleToggleTask}
         onEditTask={handleEditTask}
+        onMoveTask={handleMoveTask}
         onAddProject={handleAddProject}
+        onDeleteProject={handleDeleteProject}
         onLogout={logout}
       >
         {activeProjectId && activeProject && (
@@ -160,9 +181,12 @@ function App() {
             project={activeProject}
             checklists={activeProjectChecklists}
             tasks={activeProjectTasks}
+            allProjects={projects}
+            allChecklists={checklists}
             onToggleTask={handleToggleTask}
             onAddSubtask={handleAddSubtask}
             onEditTask={handleEditTask}
+            onMoveTask={handleMoveTask}
             onAddChecklist={(name) => {
               const newChecklist: Checklist = {
                 id: Math.random().toString(36).substr(2, 9),

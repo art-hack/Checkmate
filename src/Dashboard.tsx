@@ -1,5 +1,5 @@
 import { useState, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import type { Project, Task, User, Checklist } from './types';
@@ -14,7 +14,9 @@ interface DashboardProps {
   onAddTask: (text: string, projectId: string, checklistId: string) => void;
   onToggleTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddProject: (name: string) => void;
+  onDeleteProject: (id: string) => void;
   onLogout: () => void;
   children?: ReactNode;
 }
@@ -29,7 +31,9 @@ const Dashboard: FC<DashboardProps> = ({
   onAddTask,
   onToggleTask,
   onEditTask,
+  onMoveTask,
   onAddProject,
+  onDeleteProject,
   onLogout,
   children
 }) => {
@@ -44,6 +48,13 @@ const Dashboard: FC<DashboardProps> = ({
       onAddProject(newProjectName.trim());
       setNewProjectName('');
       setIsAddingProject(false);
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete "${name}"? All tasks and checklists within it will be permanently removed.`)) {
+      onDeleteProject(id);
     }
   };
 
@@ -92,16 +103,37 @@ const Dashboard: FC<DashboardProps> = ({
             )}
 
             <div className="space-y-1">
-              {projects.map(project => (
-                <button 
-                  key={project.id}
-                  onClick={() => onSelectProject(project.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${activeProjectId === project.id ? 'bg-action-indigo text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                >
-                  <div className={`w-2 h-2 rounded-full ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
-                  <span className="truncate text-sm">{project.name}</span>
-                </button>
-              ))}
+              {projects.map(project => {
+                const isInbox = project.id === 'inbox';
+                const isCompleted = project.progress === 100;
+                
+                return (
+                  <button 
+                    key={project.id}
+                    onClick={() => onSelectProject(project.id)}
+                    className={`group w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                  >
+                    <div className="flex items-center space-x-3 truncate">
+                      {isInbox ? (
+                        <Inbox className={`w-4 h-4 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
+                      ) : isCompleted ? (
+                        <Crown className="w-4 h-4 text-amber-400 animate-bounce" />
+                      ) : (
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
+                      )}
+                      <span className={`truncate text-sm ${isCompleted && activeProjectId !== project.id ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}`}>
+                        {project.name}
+                      </span>
+                    </div>
+                    {!isInbox && (
+                      <Trash2 
+                        onClick={(e) => handleDeleteClick(e, project.id, project.name)}
+                        className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-200' : 'text-slate-400'}`}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </nav>
@@ -158,9 +190,12 @@ const Dashboard: FC<DashboardProps> = ({
                         <TaskItem 
                           task={task} 
                           allTasks={tasks} 
+                          projects={projects}
+                          checklists={checklists}
                           onToggle={onToggleTask}
                           onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
                           onEdit={onEditTask}
+                          onMove={onMoveTask}
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
                           {projects.find(p => p.id === task.projectId)?.name}

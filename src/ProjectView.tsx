@@ -8,9 +8,12 @@ interface ProjectViewProps {
   project: Project;
   checklists: Checklist[];
   tasks: Task[];
+  allProjects: Project[];
+  allChecklists: Checklist[];
   onToggleTask: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddChecklist: (name: string) => void;
   onEditChecklist: (checklistId: string, newName: string) => void;
 }
@@ -18,10 +21,13 @@ interface ProjectViewProps {
 const ProjectView: FC<ProjectViewProps> = ({ 
   project, 
   checklists, 
-  tasks, 
+  tasks,
+  allProjects,
+  allChecklists,
   onToggleTask, 
   onAddSubtask,
   onEditTask,
+  onMoveTask,
   onAddChecklist,
   onEditChecklist
 }) => {
@@ -68,9 +74,12 @@ const ProjectView: FC<ProjectViewProps> = ({
           key={task.id} 
           task={task} 
           allTasks={tasks} 
+          projects={allProjects}
+          checklists={allChecklists}
           onToggle={onToggleTask}
           onAddSubtask={onAddSubtask}
           onEdit={onEditTask}
+          onMove={onMoveTask}
         />
       ));
   };
@@ -185,9 +194,12 @@ const ProjectView: FC<ProjectViewProps> = ({
                           key={task.id} 
                           task={task} 
                           allTasks={tasks} 
+                          projects={allProjects}
+                          checklists={allChecklists}
                           onToggle={onToggleTask}
                           onAddSubtask={onAddSubtask}
                           onEdit={onEditTask}
+                          onMove={onMoveTask}
                         />
                       ))}
                     </div>
@@ -212,9 +224,12 @@ const ProjectView: FC<ProjectViewProps> = ({
                           key={task.id} 
                           task={task} 
                           allTasks={tasks} 
+                          projects={allProjects}
+                          checklists={allChecklists}
                           onToggle={onToggleTask}
                           onAddSubtask={onAddSubtask}
                           onEdit={onEditTask}
+                          onMove={onMoveTask}
                         />
                       ))}
                     </div>
