@@ -33,6 +33,14 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
     const atIndex = input.lastIndexOf('@');
     if (atIndex !== -1 && !routingTask) {
       const query = input.substring(atIndex + 1).toLowerCase();
+      
+      // If the query exactly matches a project name, hide suggestions (it's already typed)
+      const exactMatch = projects.find(p => p.name.toLowerCase() === query);
+      if (exactMatch && query.length > 0) {
+        setShowSuggestions(false);
+        return;
+      }
+
       const filtered = projects.filter(p => p.name.toLowerCase().includes(query));
       setSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
@@ -106,10 +114,10 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
 
   const selectSuggestion = (project: Project) => {
     const atIndex = input.lastIndexOf('@');
-    const newInput = input.substring(0, atIndex) + '@' + project.name;
-    setInput(newInput);
+    const text = input.substring(0, atIndex).trim() || 'New Task';
+    setRoutingTask({ text, project });
     setShowSuggestions(false);
-    inputRef.current?.focus();
+    setInput('');
   };
 
   const targetProjectChecklists = routingTask 

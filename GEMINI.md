@@ -47,8 +47,7 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Recursive TaskItem components with Project Migration.
 - ✅ Inbox system for unassigned tasks.
 - ✅ Achievement badges for completed projects.
-
-- ✅ UI Refinements: Hover-based project label hiding on the Board and improved action button spacing.
+- ✅ UI Refinements: Improved Smart Quick-Add flow (direct project-to-section routing) and Board usability.
 
 ## 🛠️ Next Steps / Roadmap
 
