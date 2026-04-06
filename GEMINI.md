@@ -38,7 +38,8 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Sidebar project management (Create/Switch).
 - ✅ Task & Checklist editing (Double-click/Icons).
 - ✅ Responsive wide-screen layout.
-- ✅ recursive TaskItem components.
+- ✅ Recursive TaskItem components.
+- ✅ UI Refinements: Hover-based project label hiding on the Board and improved action button spacing.
 
 ## 🛠️ Next Steps / Roadmap
 

@@ -50,7 +50,7 @@ const TaskItem: FC<TaskItemProps> = ({ task, allTasks, onToggle, onAddSubtask, o
   };
 
   return (
-    <div className="ml-4 border-l-2 border-slate-200 pl-4 py-2">
+    <div className="ml-4 border-l-2 border-slate-200 pl-4 pr-4 py-2">
       <div className="flex items-center group">
         <button 
           onClick={handleToggle}

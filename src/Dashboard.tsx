@@ -154,7 +154,7 @@ const Dashboard: FC<DashboardProps> = ({
                 <div className="p-2 space-y-1">
                   {activeTasks.length > 0 ? (
                     activeTasks.map(task => (
-                      <div key={task.id} className="relative">
+                      <div key={task.id} className="relative group">
                         <TaskItem 
                           task={task} 
                           allTasks={tasks} 
@@ -162,7 +162,7 @@ const Dashboard: FC<DashboardProps> = ({
                           onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
                           onEdit={onEditTask}
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
                           {projects.find(p => p.id === task.projectId)?.name}
                         </div>
                       </div>
