@@ -142,7 +142,7 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
       </form>
 
       {showSuggestions && (
-        <div className="absolute left-0 right-0 bottom-full mb-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
           <div className="p-2 bg-slate-50 dark:bg-slate-700/50 text-xs font-bold text-slate-400 uppercase tracking-widest">
             Select Project
           </div>
@@ -160,7 +160,7 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
       )}
 
       {showSectionSelector && routingTask && (
-        <div className="absolute left-0 right-0 bottom-full mb-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
           <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
               Route to: {routingTask.project.name}
