@@ -1,0 +1,51 @@
+# CheckMate Project Context
+
+This file serves as the primary context for Gemini CLI sessions. It summarizes the current state of the CheckMate PWA, technical architecture, and pending roadmap.
+
+## 🏗️ Technical Architecture
+
+- **Framework:** React 19 (TS) + Vite 8.
+- **Styling:** Tailwind CSS v4 (CSS-first config) with custom theme:
+  - `action-indigo`: `#6366f1`
+  - `victory-green`: `#10b981`
+  - `strategy-black`: `#0f172a`
+- **Backend:** Firebase (Firestore + Auth).
+- **Authentication:** Google Auth Provider via `signInWithPopup`.
+- **PWA:** Managed via `vite-plugin-pwa` with offline support.
+
+## 📋 Core Implementation Details
+
+### Data Schema
+- **Projects:** Owners of multiple checklists.
+- **Checklists:** Side-by-side columns (Parallel workflows).
+- **Tasks:** Recursive objects supporting infinite nesting.
+
+### Smart Quick-Add
+- Uses a regex parser: `^(.*?)\s*@([^@]+)$`.
+- **Two-Step Routing:** 
+  1. Parse project name from `@Project` (supports spaces).
+  2. Prompt user to select a specific section (checklist) from a dropdown.
+- Autocomplete: Shows project suggestions when typing `@`.
+
+### Done Workflow
+- **Strategic Separation:** Horizontal divider between "Active Checklists" and "Mission Accomplished".
+- **Robustness:** Orphaned tasks (whose checklists were deleted) are automatically grouped under "Uncategorized".
+
+## 🚀 Current Status
+
+- ✅ React/Vite/TS/PWA Boilerplate.
+- ✅ Firebase Auth & Firestore setup (Environment variables secured).
+- ✅ Sidebar project management (Create/Switch).
+- ✅ Task & Checklist editing (Double-click/Icons).
+- ✅ Responsive wide-screen layout.
+- ✅ recursive TaskItem components.
+
+## 🛠️ Next Steps / Roadmap
+
+1. **Persistence Logic:** Replace local mock state in `App.tsx` with real-time Firestore listeners (`onSnapshot`).
+2. **Task Reordering:** Implement drag-and-drop for tasks and checklist columns.
+3. **Project Stats:** Add detailed analytics (e.g., velocity, completion trends).
+4. **Notifications:** Push notifications for task deadlines.
+
+---
+*Last Updated: April 6, 2026*
