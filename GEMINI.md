@@ -45,6 +45,8 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Task & Checklist editing (Double-click/Icons).
 - ✅ Responsive wide-screen layout.
 - ✅ Recursive TaskItem components with Project Migration.
+- ✅ Inline Task Creation: Quick-add tasks directly within checklist columns.
+- ✅ Drag-and-Drop Reordering: Rearrange tasks within checklists using intuitive drag handles.
 - ✅ Inbox system for unassigned tasks.
 - ✅ Achievement badges for completed projects.
 - ✅ UI Refinements: Improved Smart Quick-Add flow (direct project-to-section routing) and Board usability.

@@ -1,6 +1,8 @@
 import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2, Move, ListTodo, Hash, X } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2, Move, ListTodo, Hash, X, GripVertical } from 'lucide-react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { Task, Project, Checklist } from './types';
 
 interface TaskItemProps {
@@ -34,6 +36,21 @@ const TaskItem: FC<TaskItemProps> = ({
   const [selectedMoveProject, setSelectedMoveProject] = useState<Project | null>(null);
   
   const editInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const subtasks = allTasks.filter(t => t.parentId === task.id).sort((a, b) => a.order - b.order);
 
@@ -76,8 +93,20 @@ const TaskItem: FC<TaskItemProps> = ({
   const isRootTask = !task.parentId;
 
   return (
-    <div className="ml-4 border-l-2 border-slate-200 pl-4 pr-4 py-2">
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className={`ml-4 border-l-2 border-slate-200 pl-2 pr-4 py-2 ${isDragging ? 'z-50 relative' : ''}`}
+    >
       <div className="flex items-center group relative">
+        <div 
+          {...attributes} 
+          {...listeners} 
+          className="mr-1 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <GripVertical className="w-4 h-4" />
+        </div>
+
         <button 
           onClick={handleToggle}
           className="mr-2 focus:outline-none flex-shrink-0"
@@ -207,7 +236,7 @@ const TaskItem: FC<TaskItemProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             onSubmit={handleAddSubtask}
-            className="mt-2 flex items-center"
+            className="mt-2 flex items-center ml-6"
           >
             <input 
               autoFocus

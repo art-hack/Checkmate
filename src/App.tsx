@@ -62,7 +62,7 @@ function App() {
       checklistId: checklistId || (checklists.find(c => c.projectId === (projectId || 'inbox'))?.id || 'c-inbox'),
       parentId: null,
       ownerId: user?.uid || 'u1',
-      order: tasks.length + 1,
+      order: tasks.filter(t => t.projectId === projectId && t.checklistId === checklistId).length + 1,
       createdAt: new Date(),
     };
     setTasks([...tasks, newTask]);
@@ -84,6 +84,19 @@ function App() {
 
     const idsToMove = [taskId, ...findDescendantIds(taskId)];
     setTasks(tasks.map(t => idsToMove.includes(t.id) ? { ...t, projectId: newProjectId, checklistId: newChecklistId } : t));
+  };
+
+  const handleReorderTasks = (_projectId: string, _checklistId: string, _parentId: string | null, newOrderedTasks: Task[]) => {
+    const updatedTasks = [...tasks];
+    
+    newOrderedTasks.forEach((task, index) => {
+      const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+      if (taskIndex !== -1) {
+        updatedTasks[taskIndex] = { ...updatedTasks[taskIndex], order: index + 1 };
+      }
+    });
+
+    setTasks(updatedTasks);
   };
 
   const handleAddSubtask = (parentId: string, text: string) => {
@@ -187,6 +200,8 @@ function App() {
             onAddSubtask={handleAddSubtask}
             onEditTask={handleEditTask}
             onMoveTask={handleMoveTask}
+            onAddTask={handleAddTask}
+            onReorderTasks={handleReorderTasks}
             onAddChecklist={(name) => {
               const newChecklist: Checklist = {
                 id: Math.random().toString(36).substr(2, 9),

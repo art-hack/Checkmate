@@ -1,5 +1,21 @@
 import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
 import { Plus, Edit2, CheckCircle2 } from 'lucide-react';
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import ProgressBar from './ProgressBar';
 import TaskItem from './TaskItem';
 import type { Project, Checklist, Task } from './types';
@@ -16,6 +32,8 @@ interface ProjectViewProps {
   onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddChecklist: (name: string) => void;
   onEditChecklist: (checklistId: string, newName: string) => void;
+  onAddTask: (text: string, projectId: string, checklistId: string) => void;
+  onReorderTasks: (projectId: string, checklistId: string, parentId: string | null, newTasks: Task[]) => void;
 }
 
 const ProjectView: FC<ProjectViewProps> = ({ 
@@ -29,13 +47,24 @@ const ProjectView: FC<ProjectViewProps> = ({
   onEditTask,
   onMoveTask,
   onAddChecklist,
-  onEditChecklist
+  onEditChecklist,
+  onAddTask,
+  onReorderTasks
 }) => {
   const [globalDone, setGlobalDone] = useState(false);
   const [newChecklistName, setNewChecklistName] = useState('');
   const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
   const [editChecklistName, setEditChecklistName] = useState('');
+  const [inlineTaskText, setInlineTaskText] = useState<{ [key: string]: string }>({});
+  
   const editChecklistInputRef = useRef<HTMLInputElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (editingChecklistId) {
@@ -65,11 +94,35 @@ const ProjectView: FC<ProjectViewProps> = ({
     setEditingChecklistId(null);
   };
 
+  const handleAddInlineTask = (e: FormEvent, checklistId: string) => {
+    e.preventDefault();
+    const text = inlineTaskText[checklistId];
+    if (text?.trim()) {
+      onAddTask(text.trim(), project.id, checklistId);
+      setInlineTaskText({ ...inlineTaskText, [checklistId]: '' });
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent, checklistId: string, parentId: string | null) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const filteredTasks = tasks.filter(t => t.checklistId === checklistId && t.parentId === parentId && !t.completed);
+      const oldIndex = filteredTasks.findIndex(t => t.id === active.id);
+      const newIndex = filteredTasks.findIndex(t => t.id === over.id);
+      
+      const newTasks = arrayMove(filteredTasks, oldIndex, newIndex);
+      onReorderTasks(project.id, checklistId, parentId, newTasks);
+    }
+  };
+
   const renderTasks = (checklistId: string, isDoneSection: boolean) => {
-    return tasks
+    const filteredTasks = tasks
       .filter(t => t.checklistId === checklistId && !t.parentId && (isDoneSection ? t.completed : !t.completed))
-      .sort((a, b) => a.order - b.order)
-      .map(task => (
+      .sort((a, b) => a.order - b.order);
+
+    if (isDoneSection) {
+      return filteredTasks.map(task => (
         <TaskItem 
           key={task.id} 
           task={task} 
@@ -82,6 +135,35 @@ const ProjectView: FC<ProjectViewProps> = ({
           onMove={onMoveTask}
         />
       ));
+    }
+
+    return (
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={(e) => handleDragEnd(e, checklistId, null)}
+        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+      >
+        <SortableContext 
+          items={filteredTasks.map(t => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {filteredTasks.map(task => (
+            <TaskItem 
+              key={task.id} 
+              task={task} 
+              allTasks={tasks} 
+              projects={allProjects}
+              checklists={allChecklists}
+              onToggle={onToggleTask}
+              onAddSubtask={onAddSubtask}
+              onEdit={onEditTask}
+              onMove={onMoveTask}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    );
   };
 
   return (
@@ -116,16 +198,16 @@ const ProjectView: FC<ProjectViewProps> = ({
         </form>
       </div>
 
-      <div className="flex-grow flex flex-col min-h-0 space-y-8 overflow-y-auto pr-2">
+      <div className="flex-grow flex flex-col min-h-0 space-y-8 overflow-y-auto pr-2 custom-scrollbar">
         {/* Active Section */}
         <section>
           <div className="flex items-center space-x-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-action-indigo animate-pulse" />
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Checklists</h3>
           </div>
-          <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[300px]">
+          <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[400px]">
             {checklists.map(checklist => (
-              <div key={checklist.id} className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col">
+              <div key={checklist.id} className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col h-full">
                 <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 group flex-shrink-0">
                   {editingChecklistId === checklist.id ? (
                     <form onSubmit={handleEditChecklistSubmit} className="flex-grow">
@@ -158,8 +240,21 @@ const ProjectView: FC<ProjectViewProps> = ({
                     </>
                   )}
                 </div>
+
+                <form onSubmit={(e) => handleAddInlineTask(e, checklist.id)} className="mb-4 flex-shrink-0">
+                  <div className="flex items-center bg-slate-50 dark:bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-100 dark:border-slate-700 focus-within:border-action-indigo transition-colors">
+                    <Plus className="w-4 h-4 text-slate-400 mr-2" />
+                    <input 
+                      type="text"
+                      value={inlineTaskText[checklist.id] || ''}
+                      onChange={(e) => setInlineTaskText({ ...inlineTaskText, [checklist.id]: e.target.value })}
+                      placeholder="Add task..."
+                      className="bg-transparent outline-none text-sm w-full"
+                    />
+                  </div>
+                </form>
                 
-                <div className="space-y-1 overflow-y-auto flex-grow min-h-0 custom-scrollbar">
+                <div className="space-y-1 overflow-y-auto flex-grow min-h-0 custom-scrollbar pr-1">
                   {renderTasks(checklist.id, false)}
                 </div>
               </div>
@@ -178,13 +273,13 @@ const ProjectView: FC<ProjectViewProps> = ({
               </span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
               {checklists.map(checklist => {
                 const completedTasks = tasks.filter(t => t.checklistId === checklist.id && t.completed && !t.parentId);
                 if (completedTasks.length === 0) return null;
 
                 return (
-                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800">   
+                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: {checklist.name}</span>
                     </h4>
@@ -214,7 +309,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                 if (orphanedTasks.length === 0) return null;
 
                 return (
-                  <div key="done-orphaned" className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800">   
+                  <div key="done-orphaned" className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: Uncategorized</span>
                     </h4>
