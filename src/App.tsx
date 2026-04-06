@@ -15,13 +15,14 @@ const MOCK_PROJECTS: Project[] = [
 const MOCK_CHECKLISTS: Checklist[] = [
   { id: 'c1', name: 'Design', projectId: '1', order: 1 },
   { id: 'c2', name: 'Content', projectId: '1', order: 2 },
+  { id: 'c3', name: 'Development', projectId: '2', order: 1 },
 ];
 
 const MOCK_TASKS: Task[] = [
   { id: 't1', text: 'Create wireframes', completed: true, projectId: '1', checklistId: 'c1', parentId: null, ownerId: 'u1', order: 1, createdAt: new Date() },
   { id: 't2', text: 'Mobile view', completed: false, projectId: '1', checklistId: 'c1', parentId: 't1', ownerId: 'u1', order: 1, createdAt: new Date() },
   { id: 't3', text: 'Write copy', completed: false, projectId: '1', checklistId: 'c2', parentId: null, ownerId: 'u1', order: 1, createdAt: new Date() },
-  { id: 't4', text: 'API Design @Backend', completed: true, projectId: '2', checklistId: 'c3', parentId: null, ownerId: 'u1', order: 1, createdAt: new Date() },
+  { id: 't4', text: 'API Design', completed: true, projectId: '2', checklistId: 'c3', parentId: null, ownerId: 'u1', order: 1, createdAt: new Date() },
 ];
 
 function App() {

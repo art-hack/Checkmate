@@ -173,9 +173,9 @@ const ProjectView: FC<ProjectViewProps> = ({
               {checklists.map(checklist => {
                 const completedTasks = tasks.filter(t => t.checklistId === checklist.id && t.completed && !t.parentId);
                 if (completedTasks.length === 0) return null;
-                
+
                 return (
-                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800">
+                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: {checklist.name}</span>
                     </h4>
@@ -194,7 +194,35 @@ const ProjectView: FC<ProjectViewProps> = ({
                   </div>
                 );
               })}
+
+              {/* Orphaned Tasks (Safety fallback) */}
+              {(() => {
+                const checklistIds = new Set(checklists.map(c => c.id));
+                const orphanedTasks = tasks.filter(t => t.completed && !t.parentId && !checklistIds.has(t.checklistId));
+                if (orphanedTasks.length === 0) return null;
+
+                return (
+                  <div key="done-orphaned" className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800">   
+                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
+                      <span>From: Uncategorized</span>
+                    </h4>
+                    <div className="space-y-1 opacity-75 grayscale-[0.5] hover:grayscale-0 transition-all">
+                      {orphanedTasks.map(task => (
+                        <TaskItem 
+                          key={task.id} 
+                          task={task} 
+                          allTasks={tasks} 
+                          onToggle={onToggleTask}
+                          onAddSubtask={onAddSubtask}
+                          onEdit={onEditTask}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
+
           </section>
         )}
       </div>
