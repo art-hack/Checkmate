@@ -28,7 +28,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [projects] = useState<Project[]>(MOCK_PROJECTS);
+  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [checklists, setChecklists] = useState<Checklist[]>(MOCK_CHECKLISTS);
   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
 
@@ -50,17 +50,13 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleAddTask = (text: string, projectName: string | null) => {
-    const projectId = projectName 
-      ? (projects.find(p => p.name.toLowerCase() === projectName.toLowerCase())?.id || '1') 
-      : (activeProjectId || '1');
-    
+  const handleAddTask = (text: string, projectId: string, checklistId: string) => {
     const newTask: Task = {
       id: Math.random().toString(36).substr(2, 9),
       text,
       completed: false,
       projectId,
-      checklistId: checklists.find(c => c.projectId === projectId)?.id || 'c1',
+      checklistId,
       parentId: null,
       ownerId: user?.uid || 'u1',
       order: tasks.length + 1,
@@ -71,6 +67,10 @@ function App() {
 
   const handleToggleTask = (taskId: string) => {
     setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
+  };
+
+  const handleEditTask = (taskId: string, newText: string) => {
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, text: newText } : t));
   };
 
   const handleAddSubtask = (parentId: string, text: string) => {
@@ -89,6 +89,28 @@ function App() {
       createdAt: new Date(),
     };
     setTasks([...tasks, newSubtask]);
+  };
+
+  const handleAddProject = (name: string) => {
+    const newProject: Project = {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      ownerId: user?.uid || 'u1',
+      createdAt: new Date(),
+      completed: false,
+      progress: 0,
+    };
+    setProjects([...projects, newProject]);
+    
+    // Create a default checklist for the new project
+    const newChecklist: Checklist = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: 'General',
+      projectId: newProject.id,
+      order: 1,
+    };
+    setChecklists([...checklists, newChecklist]);
+    setActiveProjectId(newProject.id);
   };
 
   if (loading) {
@@ -122,11 +144,14 @@ function App() {
       <Dashboard 
         user={user}
         projects={projects}
+        checklists={checklists}
         tasks={tasks}
         activeProjectId={activeProjectId}
         onSelectProject={setActiveProjectId}
         onAddTask={handleAddTask}
         onToggleTask={handleToggleTask}
+        onEditTask={handleEditTask}
+        onAddProject={handleAddProject}
         onLogout={logout}
       >
         {activeProjectId && activeProject && (
@@ -136,6 +161,7 @@ function App() {
             tasks={activeProjectTasks}
             onToggleTask={handleToggleTask}
             onAddSubtask={handleAddSubtask}
+            onEditTask={handleEditTask}
             onAddChecklist={(name) => {
               const newChecklist: Checklist = {
                 id: Math.random().toString(36).substr(2, 9),
@@ -144,6 +170,9 @@ function App() {
                 order: checklists.length + 1,
               };
               setChecklists([...checklists, newChecklist]);
+            }}
+            onEditChecklist={(id, name) => {
+              setChecklists(checklists.map(c => c.id === id ? { ...c, name } : c));
             }}
           />
         )}

@@ -1,6 +1,6 @@
-import { useState, type FC, type FormEvent } from 'react';
+import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2 } from 'lucide-react';
 import type { Task } from './types';
 
 interface TaskItemProps {
@@ -8,14 +8,24 @@ interface TaskItemProps {
   allTasks: Task[];
   onToggle: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
+  onEdit: (taskId: string, newText: string) => void;
 }
 
-const TaskItem: FC<TaskItemProps> = ({ task, allTasks, onToggle, onAddSubtask }) => {
+const TaskItem: FC<TaskItemProps> = ({ task, allTasks, onToggle, onAddSubtask, onEdit }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [newSubtaskText, setNewSubtaskText] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(task.text);
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const subtasks = allTasks.filter(t => t.parentId === task.id).sort((a, b) => a.order - b.order);
+
+  useEffect(() => {
+    if (isEditing) {
+      editInputRef.current?.focus();
+    }
+  }, [isEditing]);
 
   const handleToggle = () => {
     onToggle(task.id);
@@ -31,12 +41,20 @@ const TaskItem: FC<TaskItemProps> = ({ task, allTasks, onToggle, onAddSubtask })
     }
   };
 
+  const handleEditSubmit = (e?: FormEvent) => {
+    e?.preventDefault();
+    if (editText.trim() && editText !== task.text) {
+      onEdit(task.id, editText.trim());
+    }
+    setIsEditing(false);
+  };
+
   return (
     <div className="ml-4 border-l-2 border-slate-200 pl-4 py-2">
       <div className="flex items-center group">
         <button 
           onClick={handleToggle}
-          className="mr-2 focus:outline-none"
+          className="mr-2 focus:outline-none flex-shrink-0"
         >
           {task.completed ? (
             <CheckCircle2 className="w-5 h-5 text-victory-green" />
@@ -45,14 +63,38 @@ const TaskItem: FC<TaskItemProps> = ({ task, allTasks, onToggle, onAddSubtask })
           )}
         </button>
 
-        <span className={`flex-grow cursor-pointer ${task.completed ? 'task-completed' : ''}`}>
-          {task.text}
-        </span>
+        {isEditing ? (
+          <form onSubmit={handleEditSubmit} className="flex-grow mr-2 min-w-0">
+            <input
+              ref={editInputRef}
+              type="text"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onBlur={() => handleEditSubmit()}
+              className="w-full bg-transparent border-b border-action-indigo outline-none px-1"
+            />
+          </form>
+        ) : (
+          <span 
+            onDoubleClick={() => setIsEditing(true)}
+            className={`flex-grow cursor-pointer whitespace-normal break-words min-w-0 ${task.completed ? 'task-completed' : ''}`}
+          >
+            {task.text}
+          </span>
+        )}
 
         <div className="hidden group-hover:flex items-center space-x-1">
           <button 
+            onClick={() => setIsEditing(true)}
+            className="p-1 text-slate-400 hover:text-action-indigo rounded"
+            title="Edit task"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button 
             onClick={() => setShowAddSubtask(!showAddSubtask)}
             className="p-1 text-slate-400 hover:text-action-indigo rounded"
+            title="Add subtask"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -103,6 +145,7 @@ const TaskItem: FC<TaskItemProps> = ({ task, allTasks, onToggle, onAddSubtask })
                 allTasks={allTasks} 
                 onToggle={onToggle}
                 onAddSubtask={onAddSubtask}
+                onEdit={onEdit}
               />
             ))}
           </motion.div>

@@ -1,5 +1,5 @@
-import { useState, type FC, type FormEvent } from 'react';
-import { Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
+import { Plus, Edit2, CheckCircle2 } from 'lucide-react';
 import ProgressBar from './ProgressBar';
 import TaskItem from './TaskItem';
 import type { Project, Checklist, Task } from './types';
@@ -10,7 +10,9 @@ interface ProjectViewProps {
   tasks: Task[];
   onToggleTask: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
+  onEditTask: (taskId: string, newText: string) => void;
   onAddChecklist: (name: string) => void;
+  onEditChecklist: (checklistId: string, newName: string) => void;
 }
 
 const ProjectView: FC<ProjectViewProps> = ({ 
@@ -19,10 +21,21 @@ const ProjectView: FC<ProjectViewProps> = ({
   tasks, 
   onToggleTask, 
   onAddSubtask,
-  onAddChecklist
+  onEditTask,
+  onAddChecklist,
+  onEditChecklist
 }) => {
   const [globalDone, setGlobalDone] = useState(false);
   const [newChecklistName, setNewChecklistName] = useState('');
+  const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
+  const [editChecklistName, setEditChecklistName] = useState('');
+  const editChecklistInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingChecklistId) {
+      editChecklistInputRef.current?.focus();
+    }
+  }, [editingChecklistId]);
 
   const calculateProgress = () => {
     if (tasks.length === 0) return 0;
@@ -38,6 +51,14 @@ const ProjectView: FC<ProjectViewProps> = ({
     }
   };
 
+  const handleEditChecklistSubmit = (e?: FormEvent) => {
+    e?.preventDefault();
+    if (editingChecklistId && editChecklistName.trim()) {
+      onEditChecklist(editingChecklistId, editChecklistName.trim());
+    }
+    setEditingChecklistId(null);
+  };
+
   const renderTasks = (checklistId: string, isDoneSection: boolean) => {
     return tasks
       .filter(t => t.checklistId === checklistId && !t.parentId && (isDoneSection ? t.completed : !t.completed))
@@ -49,31 +70,26 @@ const ProjectView: FC<ProjectViewProps> = ({
           allTasks={tasks} 
           onToggle={onToggleTask}
           onAddSubtask={onAddSubtask}
+          onEdit={onEditTask}
         />
       ));
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
+    <div className="h-full flex flex-col space-y-6">
+      <div className="flex-shrink-0">
         <h1 className="text-3xl font-bold mb-4">{project.name}</h1>
         <ProgressBar progress={calculateProgress()} />
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            {globalDone ? 'Global Done' : 'Contextual Done'}
-          </span>
+      <div className="flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-4">
           <button 
             onClick={() => setGlobalDone(!globalDone)}
-            className="focus:outline-none"
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center space-x-2 ${globalDone ? 'bg-victory-green text-white shadow-lg shadow-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
           >
-            {globalDone ? (
-              <ToggleRight className="w-8 h-8 text-action-indigo" />
-            ) : (
-              <ToggleLeft className="w-8 h-8 text-slate-400" />
-            )}
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{globalDone ? 'Hide Done' : 'Show Done'}</span>
           </button>
         </div>
 
@@ -83,53 +99,103 @@ const ProjectView: FC<ProjectViewProps> = ({
             value={newChecklistName}
             onChange={(e) => setNewChecklistName(e.target.value)}
             placeholder="New checklist..."
-            className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 bg-transparent text-sm"
+            className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 bg-transparent text-sm outline-none focus:border-action-indigo"
           />
-          <button type="submit" className="p-1 bg-action-indigo text-white rounded-md">
+          <button type="submit" className="p-1 bg-action-indigo text-white rounded-md hover:bg-indigo-700 transition-colors">
             <Plus className="w-4 h-4" />
           </button>
         </form>
       </div>
 
-      <div className="flex overflow-x-auto pb-6 space-x-6">
-        {checklists.map(checklist => (
-          <div key={checklist.id} className="min-w-[320px] bg-slate-50 dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
-            <h2 className="text-lg font-semibold mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
-              {checklist.name}
-            </h2>
-            
-            <div className="space-y-1">
-              {renderTasks(checklist.id, false)}
-            </div>
-
-            {!globalDone && (
-              <div className="mt-8">
-                <h3 className="text-sm font-bold text-victory-green uppercase tracking-wider mb-2">Done</h3>
-                <div className="space-y-1">
-                  {renderTasks(checklist.id, true)}
+      <div className="flex-grow flex flex-col min-h-0 space-y-8 overflow-y-auto pr-2">
+        {/* Active Section */}
+        <section>
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-action-indigo animate-pulse" />
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Checklists</h3>
+          </div>
+          <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[300px]">
+            {checklists.map(checklist => (
+              <div key={checklist.id} className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col">
+                <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 group flex-shrink-0">
+                  {editingChecklistId === checklist.id ? (
+                    <form onSubmit={handleEditChecklistSubmit} className="flex-grow">
+                      <input
+                        ref={editChecklistInputRef}
+                        type="text"
+                        value={editChecklistName}
+                        onChange={(e) => setEditChecklistName(e.target.value)}
+                        onBlur={() => handleEditChecklistSubmit()}
+                        className="w-full bg-transparent outline-none font-bold text-lg text-slate-800 dark:text-slate-100"
+                      />
+                    </form>
+                  ) : (
+                    <>
+                      <h2 className="text-lg font-bold truncate cursor-pointer text-slate-800 dark:text-slate-100" onDoubleClick={() => {
+                        setEditingChecklistId(checklist.id);
+                        setEditChecklistName(checklist.name);
+                      }}>
+                        {checklist.name}
+                      </h2>
+                      <button 
+                        onClick={() => {
+                          setEditingChecklistId(checklist.id);
+                          setEditChecklistName(checklist.name);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-action-indigo transition-all"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+                
+                <div className="space-y-1 overflow-y-auto flex-grow min-h-0 custom-scrollbar">
+                  {renderTasks(checklist.id, false)}
                 </div>
               </div>
-            )}
+            ))}
           </div>
-        ))}
+        </section>
 
+        {/* Done Section (Horizontal Separation) */}
         {globalDone && (
-          <div className="min-w-[320px] bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-4 shadow-sm border border-emerald-100 dark:border-emerald-900/50">
-            <h2 className="text-lg font-semibold mb-4 border-b border-emerald-200 dark:border-emerald-900 pb-2 text-victory-green">
-              Global Done
-            </h2>
-            <div className="space-y-1">
-              {tasks.filter(t => t.completed && !t.parentId).map(task => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task} 
-                  allTasks={tasks} 
-                  onToggle={onToggleTask}
-                  onAddSubtask={onAddSubtask}
-                />
-              ))}
+          <section className="pt-8 border-t-2 border-slate-100 dark:border-slate-800/50">
+            <div className="flex items-center space-x-2 mb-6">
+              <CheckCircle2 className="w-5 h-5 text-victory-green" />
+              <h3 className="text-lg font-bold text-victory-green">Mission Accomplished</h3>
+              <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-victory-green px-2 py-0.5 rounded-full font-bold">
+                {tasks.filter(t => t.completed && !t.parentId).length} items
+              </span>
             </div>
-          </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {checklists.map(checklist => {
+                const completedTasks = tasks.filter(t => t.checklistId === checklist.id && t.completed && !t.parentId);
+                if (completedTasks.length === 0) return null;
+                
+                return (
+                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
+                      <span>From: {checklist.name}</span>
+                    </h4>
+                    <div className="space-y-1 opacity-75 grayscale-[0.5] hover:grayscale-0 transition-all">
+                      {completedTasks.map(task => (
+                        <TaskItem 
+                          key={task.id} 
+                          task={task} 
+                          allTasks={tasks} 
+                          onToggle={onToggleTask}
+                          onAddSubtask={onAddSubtask}
+                          onEdit={onEditTask}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         )}
       </div>
     </div>

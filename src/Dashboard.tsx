@@ -1,17 +1,20 @@
-import { type FC, type ReactNode } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut } from 'lucide-react';
+import { useState, type FC, type ReactNode, type FormEvent } from 'react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
-import type { Project, Task, User } from './types';
+import type { Project, Task, User, Checklist } from './types';
 
 interface DashboardProps {
   user: User;
   projects: Project[];
+  checklists: Checklist[];
   tasks: Task[];
   activeProjectId: string | null;
   onSelectProject: (id: string | null) => void;
-  onAddTask: (text: string, projectName: string | null) => void;
+  onAddTask: (text: string, projectId: string, checklistId: string) => void;
   onToggleTask: (taskId: string) => void;
+  onEditTask: (taskId: string, newText: string) => void;
+  onAddProject: (name: string) => void;
   onLogout: () => void;
   children?: ReactNode;
 }
@@ -19,15 +22,30 @@ interface DashboardProps {
 const Dashboard: FC<DashboardProps> = ({
   user,
   projects,
+  checklists,
   tasks,
   activeProjectId,
   onSelectProject,
   onAddTask,
   onToggleTask,
+  onEditTask,
+  onAddProject,
   onLogout,
   children
 }) => {
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+
   const activeTasks = tasks.filter(t => !t.completed).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+  const handleAddProject = (e: FormEvent) => {
+    e.preventDefault();
+    if (newProjectName.trim()) {
+      onAddProject(newProjectName.trim());
+      setNewProjectName('');
+      setIsAddingProject(false);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
@@ -40,7 +58,7 @@ const Dashboard: FC<DashboardProps> = ({
           </h2>
         </div>
 
-        <nav className="flex-grow p-4 space-y-2">
+        <nav className="flex-grow p-4 space-y-2 overflow-y-auto">
           <button 
             onClick={() => onSelectProject(null)}
             className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${!activeProjectId ? 'bg-action-indigo text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
@@ -50,17 +68,41 @@ const Dashboard: FC<DashboardProps> = ({
           </button>
 
           <div className="pt-4">
-            <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Projects</h3>
-            {projects.map(project => (
+            <div className="px-4 flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>
               <button 
-                key={project.id}
-                onClick={() => onSelectProject(project.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${activeProjectId === project.id ? 'bg-action-indigo text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                onClick={() => setIsAddingProject(!isAddingProject)}
+                className="text-slate-400 hover:text-action-indigo transition-colors"
               >
-                <div className={`w-2 h-2 rounded-full ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
-                <span className="truncate">{project.name}</span>
+                <Plus className="w-4 h-4" />
               </button>
-            ))}
+            </div>
+
+            {isAddingProject && (
+              <form onSubmit={handleAddProject} className="px-4 mb-4">
+                <input 
+                  autoFocus
+                  type="text"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  placeholder="Project name..."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1.5 text-sm outline-none focus:border-action-indigo"
+                />
+              </form>
+            )}
+
+            <div className="space-y-1">
+              {projects.map(project => (
+                <button 
+                  key={project.id}
+                  onClick={() => onSelectProject(project.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${activeProjectId === project.id ? 'bg-action-indigo text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
+                  <span className="truncate text-sm">{project.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </nav>
 
@@ -81,16 +123,21 @@ const Dashboard: FC<DashboardProps> = ({
 
       {/* Main Content */}
       <main className="flex-grow overflow-y-auto">
-        <div className="max-w-4xl mx-auto py-8 px-6">
+        <div className="h-full py-8 px-8">
           {!activeProjectId ? (
-            <div>
+            <div className="max-w-5xl mx-auto">
               <header className="mb-8">
                 <h1 className="text-3xl font-bold mb-2">The Board</h1>
                 <p className="text-slate-500">Your unified view of active tasks across all projects.</p>
               </header>
 
               <div className="mb-8">
-                <SmartQuickAdd onAddTask={onAddTask} />
+                <SmartQuickAdd 
+                  projects={projects} 
+                  checklists={checklists}
+                  onAddTask={onAddTask} 
+                  activeProjectId={activeProjectId}
+                />
               </div>
 
               <section className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -113,6 +160,7 @@ const Dashboard: FC<DashboardProps> = ({
                           allTasks={tasks} 
                           onToggle={onToggleTask}
                           onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
+                          onEdit={onEditTask}
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase">
                           {projects.find(p => p.id === task.projectId)?.name}
