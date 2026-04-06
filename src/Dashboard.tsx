@@ -2,6 +2,7 @@ import { useState, type FC, type ReactNode, type FormEvent } from 'react';
 import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
+import ConfirmationDialog from './ConfirmationDialog';
 import type { Project, Task, User, Checklist } from './types';
 
 interface DashboardProps {
@@ -39,6 +40,7 @@ const Dashboard: FC<DashboardProps> = ({
 }) => {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const activeTasks = tasks.filter(t => !t.completed).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
@@ -53,13 +55,11 @@ const Dashboard: FC<DashboardProps> = ({
 
   const handleDeleteClick = (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
-    if (window.confirm(`Are you sure you want to delete "${name}"? All tasks and checklists within it will be permanently removed.`)) {
-      onDeleteProject(id);
-    }
+    setProjectToDelete({ id, name });
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       {/* Sidebar */}
       <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
         <div className="p-6">
@@ -216,6 +216,17 @@ const Dashboard: FC<DashboardProps> = ({
           )}
         </div>
       </main>
+
+      {/* Custom Confirmation Dialog */}
+      <ConfirmationDialog 
+        isOpen={!!projectToDelete}
+        title="Delete Project"
+        message={`Are you sure you want to delete "${projectToDelete?.name}"? This action cannot be undone and all tasks within it will be lost.`}
+        confirmLabel="Delete Project"
+        onConfirm={() => projectToDelete && onDeleteProject(projectToDelete.id)}
+        onCancel={() => setProjectToDelete(null)}
+        isDanger={true}
+      />
     </div>
   );
 };
