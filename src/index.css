@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-action-indigo: #4f46e5;
+  --color-victory-green: #10b981;
+}
+
+:root {
+  --bg-color: #f8fafc; /* Slate Gray 50 (Off-White) */
+  --text-color: #1e293b; /* Slate Gray 800 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0f172a; /* Slate Gray 900 */
+    --text-color: #f8fafc; /* Slate Gray 50 */
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+/* Strike-through animation and slight fade */
+.task-completed {
+  @apply text-slate-400 line-through opacity-60;
+  transition: all 0.3s ease-in-out;
+}
