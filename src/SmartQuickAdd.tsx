@@ -128,7 +128,7 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
     <div className="relative">
       <form 
         onSubmit={handleSubmit}
-        className="relative flex items-center bg-white dark:bg-slate-800 rounded-lg shadow-md p-2 border border-slate-200 dark:border-slate-700"
+        className="relative flex items-center bg-white dark:bg-slate-800 rounded-xl shadow-lg p-2 border border-slate-200 dark:border-slate-700 transition-colors focus-within:ring-4 focus-within:ring-action-indigo/10"
       >
         <input 
           ref={inputRef}
@@ -138,39 +138,41 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
           onKeyDown={handleKeyDown}
           disabled={!!routingTask}
           placeholder="Add a task... use @Project to route"
-          className="flex-grow bg-transparent outline-none px-4 py-2 text-slate-700 dark:text-slate-200 disabled:opacity-50"
+          className="flex-grow bg-transparent outline-none px-4 py-2 text-slate-700 dark:text-slate-200 disabled:opacity-50 transition-colors"
         />
         <button 
           type="submit"
           disabled={!!routingTask}
-          className="p-2 bg-action-indigo text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          className="p-2 bg-action-indigo text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-md shadow-indigo-200 dark:shadow-none"
         >
           <Send className="w-5 h-5" />
         </button>
       </form>
 
       {showSuggestions && (
-        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
-          <div className="p-2 bg-slate-50 dark:bg-slate-700/50 text-xs font-bold text-slate-400 uppercase tracking-widest">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 transition-colors">
+          <div className="p-2 bg-slate-50 dark:bg-slate-700/50 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">
             Select Project
           </div>
-          {suggestions.map((project, index) => (
-            <button
-              key={project.id}
-              onClick={() => selectSuggestion(project)}
-              className={`w-full flex items-center space-x-3 px-4 py-2 text-left transition-colors ${index === suggestionIndex ? 'bg-action-indigo text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700'}`}
-            >
-              <Hash className={`w-4 h-4 ${index === suggestionIndex ? 'text-white' : 'text-slate-400'}`} />
-              <span>{project.name}</span>
-            </button>
-          ))}
+          <div className="max-h-60 overflow-y-auto custom-scrollbar">
+            {suggestions.map((project, index) => (
+              <button
+                key={project.id}
+                onClick={() => selectSuggestion(project)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-colors border-b last:border-0 border-slate-50 dark:border-slate-700/50 ${index === suggestionIndex ? 'bg-action-indigo text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'}`}
+              >
+                <Hash className={`w-4 h-4 ${index === suggestionIndex ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
+                <span className="font-medium">{project.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {showSectionSelector && routingTask && (
-        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 transition-colors">
           <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
               Route to: {routingTask.project.name}
             </span>
             <button 
@@ -183,13 +185,13 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
           <div className="p-1 bg-slate-100 dark:bg-slate-900/50 text-[10px] font-bold text-slate-500 text-center uppercase tracking-tighter">
             Select Section
           </div>
-          <div className="max-h-48 overflow-y-auto">
+          <div className="max-h-60 overflow-y-auto custom-scrollbar">
             {targetProjectChecklists.length > 0 ? (
               targetProjectChecklists.map((checklist) => (
                 <button
                   key={checklist.id}
                   onClick={() => selectSection(checklist.id)}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-200"
                 >
                   <ListTodo className="w-4 h-4 text-action-indigo" />
                   <span className="font-medium text-sm">{checklist.name}</span>

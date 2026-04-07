@@ -1,30 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-  --color-action-indigo: #4f46e5;
+  --color-action-indigo: #6366f1;
   --color-victory-green: #10b981;
+  --color-strategy-black: #0f172a;
+  --color-check-white: #f8fafc;
 }
 
 :root {
-  --bg-color: #f8fafc; /* Slate Gray 50 (Off-White) */
-  --text-color: #1e293b; /* Slate Gray 800 */
+  --bg-color: #f8fafc;
+  --text-color: #1e293b;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(226, 232, 240, 0.8);
+  --sidebar-bg: #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-color: #0f172a; /* Slate Gray 900 */
-    --text-color: #f8fafc; /* Slate Gray 50 */
-  }
+.dark {
+  --bg-color: #020617;
+  --text-color: #f8fafc;
+  --card-bg: rgba(15, 23, 42, 0.8);
+  --border-color: rgba(30, 41, 59, 0.8);
+  --sidebar-bg: #0f172a;
 }
 
 body {
   background-color: var(--bg-color);
+  background-image: radial-gradient(circle at 2px 2px, var(--border-color) 1px, transparent 0);
+  background-size: 40px 40px;
   color: var(--text-color);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Strike-through animation and slight fade */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
 .task-completed {
-  @apply text-slate-400 line-through opacity-60;
-  transition: all 0.3s ease-in-out;
+  @apply text-slate-400 line-through opacity-50;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom Scrollbar for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
 }

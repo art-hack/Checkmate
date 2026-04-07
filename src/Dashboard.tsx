@@ -1,5 +1,5 @@
 import { useState, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy, Moon, Sun, Monitor } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -21,6 +21,8 @@ interface DashboardProps {
   onDeleteProject: (id: string) => void;
   onDuplicateProject: (projectId: string, newName: string, copyTasks: boolean) => void;
   onLogout: () => void;
+  theme: 'light' | 'dark' | 'system';
+  onThemeToggle: (theme: 'light' | 'dark' | 'system') => void;
   children?: ReactNode;
 }
 
@@ -39,6 +41,8 @@ const Dashboard: FC<DashboardProps> = ({
   onDeleteProject,
   onDuplicateProject,
   onLogout,
+  theme,
+  onThemeToggle,
   children
 }) => {
   const [isAddingProject, setIsAddingProject] = useState(false);
@@ -129,8 +133,16 @@ const Dashboard: FC<DashboardProps> = ({
     );
   };
 
+  const cycleTheme = () => {
+    if (theme === 'system') onThemeToggle('light');
+    else if (theme === 'light') onThemeToggle('dark');
+    else onThemeToggle('system');
+  };
+
+  const ThemeIcon = theme === 'system' ? Monitor : theme === 'dark' ? Moon : Sun;
+
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Sidebar */}
       <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 relative`}>
         <button 
@@ -210,7 +222,17 @@ const Dashboard: FC<DashboardProps> = ({
         </nav>
 
         <div className={`p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 ${isSidebarCollapsed ? 'px-4 flex flex-col items-center space-y-4' : ''}`}>
-          <div className={`flex items-center space-x-3 px-2 py-2 mb-2 w-full ${isSidebarCollapsed ? 'justify-center mb-0' : ''}`}>
+          {/* Theme Toggle */}
+          <button 
+            onClick={cycleTheme}
+            className={`flex items-center space-x-3 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            title={`Theme: ${theme}`}
+          >
+            <ThemeIcon className="w-5 h-5 flex-shrink-0" />
+            {!isSidebarCollapsed && <span className="text-sm font-medium capitalize">{theme} Mode</span>}
+          </button>
+
+          <div className={`flex items-center space-x-3 px-2 py-2 w-full ${isSidebarCollapsed ? 'justify-center mb-0' : ''}`}>
             {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex-shrink-0" />}
             {!isSidebarCollapsed && <span className="text-sm font-medium truncate">{user.displayName}</span>}
           </div>
@@ -244,13 +266,13 @@ const Dashboard: FC<DashboardProps> = ({
                 />
               </div>
 
-              <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between transition-colors">
                   <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
                     <ListTodo className="w-5 h-5 text-action-indigo" />
                     <span>Up Next</span>
                   </h2>
-                  <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full font-bold text-slate-600 dark:text-slate-300">
+                  <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full font-bold text-slate-600 dark:text-slate-300 transition-colors">
                     {activeTasks.length} tasks
                   </span>
                 </div>

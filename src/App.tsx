@@ -34,6 +34,12 @@ function App() {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [checklists, setChecklists] = useState<Checklist[]>(MOCK_CHECKLISTS);
   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+  
+  // Theme State
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
+    const saved = localStorage.getItem('checkmate-theme');
+    return (saved as 'light' | 'dark' | 'system') || 'system';
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -52,6 +58,22 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
+  // Apply Theme Logic
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    const isDark = theme === 'dark' || (theme === 'system' && systemDark);
+    
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
+    localStorage.setItem('checkmate-theme', theme);
+  }, [theme]);
 
   const handleAddTask = (text: string, projectId: string, checklistId: string) => {
     const newTask: Task = {
@@ -242,6 +264,8 @@ function App() {
         onDeleteProject={handleDeleteProject}
         onDuplicateProject={handleDuplicateProject}
         onLogout={logout}
+        theme={theme}
+        onThemeToggle={setTheme}
       >
         {activeProjectId && activeProject && (
           <ProjectView 

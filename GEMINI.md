@@ -49,6 +49,7 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Drag-and-Drop Reordering: Rearrange tasks within checklists using intuitive drag handles.
 - ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.
 - ✅ Collapsible Sidebar: Sidebar can now be toggled to a minimized icon-only state with centered icons and tooltips.
+- ✅ Dark Mode: Integrated dark mode with manual toggle and system preference support.
 - ✅ Strategic Sidebar Organization: "The Board" and "Inbox" are top-level items, followed by Active Projects and "Checkmated" (completed) sections.
 - ✅ UI Refinements: Improved Smart Quick-Add flow, centered icons in collapsed sidebar, and filtered Board view to prevent subtask duplication.
 - ✅ Project Templates: Ability to duplicate an entire project, with an option to include or exclude existing tasks.

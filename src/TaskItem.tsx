@@ -96,14 +96,14 @@ const TaskItem: FC<TaskItemProps> = ({
     <div 
       ref={setNodeRef}
       style={style}
-      className={`relative ${task.parentId ? 'ml-6 border-l-2 border-slate-200 pl-4' : 'pl-6'} pr-4 py-1.5 ${isDragging ? 'z-50' : ''}`}
+      className={`relative ${task.parentId ? 'ml-6 border-l-2 border-slate-200 dark:border-slate-800 pl-4' : 'pl-6'} pr-4 py-1.5 ${isDragging ? 'z-50' : ''}`}
     >
       <div className="flex items-center group min-h-[32px]">
         {/* Drag Handle - Absolutely positioned to the left of the item content */}
         <div 
           {...attributes} 
           {...listeners} 
-          className="absolute left-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+          className="absolute left-0 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
         >
           <GripVertical className="w-4 h-4" />
         </div>
@@ -115,7 +115,7 @@ const TaskItem: FC<TaskItemProps> = ({
           {task.completed ? (
             <CheckCircle2 className="w-5 h-5 text-victory-green" />
           ) : (
-            <Circle className="w-5 h-5 text-slate-400 group-hover:text-action-indigo" />
+            <Circle className="w-5 h-5 text-slate-400 dark:text-slate-600 group-hover:text-action-indigo dark:group-hover:text-action-indigo transition-colors" />
           )}
         </button>
 
@@ -127,13 +127,13 @@ const TaskItem: FC<TaskItemProps> = ({
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               onBlur={() => handleEditSubmit()}
-              className="w-full bg-transparent border-b border-action-indigo outline-none px-1 py-0.5 text-sm"
+              className="w-full bg-transparent border-b border-action-indigo outline-none px-1 py-0.5 text-sm text-slate-900 dark:text-slate-100"
             />
           </form>
         ) : (
           <span 
             onDoubleClick={() => setIsEditing(true)}
-            className={`flex-grow cursor-pointer whitespace-normal break-words min-w-0 py-0.5 text-sm ${task.completed ? 'task-completed' : ''}`}
+            className={`flex-grow cursor-pointer whitespace-normal break-words min-w-0 py-0.5 text-sm text-slate-700 dark:text-slate-200 transition-colors ${task.completed ? 'task-completed' : ''}`}
           >
             {task.text}
           </span>
@@ -143,7 +143,7 @@ const TaskItem: FC<TaskItemProps> = ({
           {isRootTask && onMove && projects && checklists && (
             <button 
               onClick={() => setShowMoveMenu(!showMoveMenu)}
-              className="p-1 text-slate-400 hover:text-action-indigo rounded transition-colors"
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
               title="Move to project"
             >
               <Move className="w-4 h-4" />
@@ -151,14 +151,14 @@ const TaskItem: FC<TaskItemProps> = ({
           )}
           <button 
             onClick={() => setIsEditing(true)}
-            className="p-1 text-slate-400 hover:text-action-indigo rounded transition-colors"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Edit task"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setShowAddSubtask(!showAddSubtask)}
-            className="p-1 text-slate-400 hover:text-action-indigo rounded transition-colors"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Add subtask"
           >
             <Plus className="w-4 h-4" />
@@ -166,7 +166,7 @@ const TaskItem: FC<TaskItemProps> = ({
           {subtasks.length > 0 && (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 text-slate-400 hover:text-action-indigo rounded transition-colors"
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             >
               {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
@@ -183,15 +183,15 @@ const TaskItem: FC<TaskItemProps> = ({
               className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[100] overflow-hidden"
             >
               <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
                   {selectedMoveProject ? 'Select Section' : 'Move Task'}
                 </span>
-                <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+                <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="max-h-60 overflow-y-auto">
+              <div className="max-h-60 overflow-y-auto custom-scrollbar">
                 {!selectedMoveProject ? (
                   projects.map(p => (
                     <button 
@@ -199,8 +199,8 @@ const TaskItem: FC<TaskItemProps> = ({
                       onClick={() => setSelectedMoveProject(p)}
                       className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
                     >
-                      <Hash className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm font-medium">{p.name}</span>
+                      <Hash className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{p.name}</span>
                     </button>
                   ))
                 ) : (
@@ -219,7 +219,7 @@ const TaskItem: FC<TaskItemProps> = ({
                         className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
                       >
                         <ListTodo className="w-4 h-4 text-action-indigo" />
-                        <span className="text-sm font-medium">{c.name}</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
                       </button>
                     ))}
                   </>
@@ -245,7 +245,7 @@ const TaskItem: FC<TaskItemProps> = ({
               value={newSubtaskText}
               onChange={(e) => setNewSubtaskText(e.target.value)}
               placeholder="New subtask..."
-              className="flex-grow border-b border-action-indigo bg-transparent outline-none px-2 py-1 text-xs"
+              className="flex-grow border-b border-action-indigo bg-transparent outline-none px-2 py-1 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
             />
           </motion.form>
         )}

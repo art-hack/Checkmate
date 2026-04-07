@@ -169,7 +169,7 @@ const ProjectView: FC<ProjectViewProps> = ({
   return (
     <div className="h-full flex flex-col space-y-6">
       <div className="flex-shrink-0">
-        <h1 className="text-3xl font-bold mb-4">{project.name}</h1>
+        <h1 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">{project.name}</h1>
         <ProgressBar progress={calculateProgress()} />
       </div>
 
@@ -177,7 +177,7 @@ const ProjectView: FC<ProjectViewProps> = ({
         <div className="flex items-center space-x-4">
           <button 
             onClick={() => setGlobalDone(!globalDone)}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center space-x-2 ${globalDone ? 'bg-victory-green text-white shadow-lg shadow-emerald-200' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center space-x-2 ${globalDone ? 'bg-victory-green text-white shadow-lg shadow-emerald-200' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'}`}
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{globalDone ? 'Hide Done' : 'Show Done'}</span>
@@ -190,7 +190,7 @@ const ProjectView: FC<ProjectViewProps> = ({
             value={newChecklistName}
             onChange={(e) => setNewChecklistName(e.target.value)}
             placeholder="New checklist..."
-            className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 bg-transparent text-sm outline-none focus:border-action-indigo"
+            className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 bg-white dark:bg-slate-900 text-sm outline-none focus:border-action-indigo transition-colors"
           />
           <button type="submit" className="p-1 bg-action-indigo text-white rounded-md hover:bg-indigo-700 transition-colors">
             <Plus className="w-4 h-4" />
@@ -205,9 +205,9 @@ const ProjectView: FC<ProjectViewProps> = ({
             <div className="w-2 h-2 rounded-full bg-action-indigo animate-pulse" />
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Checklists</h3>
           </div>
-          <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[400px]">
+          <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[400px] custom-scrollbar">
             {checklists.map(checklist => (
-              <div key={checklist.id} className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col h-full">
+              <div key={checklist.id} className="min-w-[320px] max-w-[400px] flex-shrink-0 glass-card rounded-2xl p-5 flex flex-col h-full transition-colors">
                 <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 group flex-shrink-0">
                   {editingChecklistId === checklist.id ? (
                     <form onSubmit={handleEditChecklistSubmit} className="flex-grow">
@@ -249,7 +249,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                       value={inlineTaskText[checklist.id] || ''}
                       onChange={(e) => setInlineTaskText({ ...inlineTaskText, [checklist.id]: e.target.value })}
                       placeholder="Add task..."
-                      className="bg-transparent outline-none text-sm w-full"
+                      className="bg-transparent outline-none text-sm w-full text-slate-700 dark:text-slate-200"
                     />
                   </div>
                 </form>
@@ -279,7 +279,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                 if (completedTasks.length === 0) return null;
 
                 return (
-                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit">   
+                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: {checklist.name}</span>
                     </h4>
@@ -309,7 +309,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                 if (orphanedTasks.length === 0) return null;
 
                 return (
-                  <div key="done-orphaned" className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit">   
+                  <div key="done-orphaned" className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: Uncategorized</span>
                     </h4>
