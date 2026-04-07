@@ -1,5 +1,5 @@
 import { useState, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -58,6 +58,43 @@ const Dashboard: FC<DashboardProps> = ({
     setProjectToDelete({ id, name });
   };
 
+  const inboxProject = projects.find(p => p.id === 'inbox');
+  const otherProjects = projects.filter(p => p.id !== 'inbox');
+  const activeProjects = otherProjects.filter(p => p.progress < 100);
+  const completedProjects = otherProjects.filter(p => p.progress === 100);
+
+  const renderProjectButton = (project: Project) => {
+    const isInbox = project.id === 'inbox';
+    const isCompleted = project.progress === 100;
+    
+    return (
+      <button 
+        key={project.id}
+        onClick={() => onSelectProject(project.id)}
+        className={`group w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+      >
+        <div className="flex items-center space-x-3 truncate">
+          {isInbox ? (
+            <InboxIcon className={`w-4 h-4 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
+          ) : isCompleted ? (
+            <Crown className="w-4 h-4 text-amber-400 animate-bounce" />
+          ) : (
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
+          )}
+          <span className={`truncate text-sm ${isCompleted && activeProjectId !== project.id ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}`}>
+            {project.name}
+          </span>
+        </div>
+        {!isInbox && (
+          <Trash2 
+            onClick={(e) => handleDeleteClick(e, project.id, project.name)}
+            className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-200' : 'text-slate-400'}`}
+          />
+        )}
+      </button>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       {/* Sidebar */}
@@ -69,17 +106,20 @@ const Dashboard: FC<DashboardProps> = ({
           </h2>
         </div>
 
-        <nav className="flex-grow p-4 space-y-2 overflow-y-auto">
-          <button 
-            onClick={() => onSelectProject(null)}
-            className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${!activeProjectId ? 'bg-action-indigo text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span>The Board</span>
-          </button>
+        <nav className="flex-grow p-4 space-y-6 overflow-y-auto custom-scrollbar">
+          <div className="space-y-1">
+            <button 
+              onClick={() => onSelectProject(null)}
+              className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${!activeProjectId ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="text-sm font-medium">The Board</span>
+            </button>
+            {inboxProject && renderProjectButton(inboxProject)}
+          </div>
 
-          <div className="pt-4">
-            <div className="px-4 flex items-center justify-between mb-2">
+          <div className="space-y-4">
+            <div className="px-4 flex items-center justify-between">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>
               <button 
                 onClick={() => setIsAddingProject(!isAddingProject)}
@@ -90,7 +130,7 @@ const Dashboard: FC<DashboardProps> = ({
             </div>
 
             {isAddingProject && (
-              <form onSubmit={handleAddProject} className="px-4 mb-4">
+              <form onSubmit={handleAddProject} className="px-4">
                 <input 
                   autoFocus
                   type="text"
@@ -103,44 +143,25 @@ const Dashboard: FC<DashboardProps> = ({
             )}
 
             <div className="space-y-1">
-              {projects.map(project => {
-                const isInbox = project.id === 'inbox';
-                const isCompleted = project.progress === 100;
-                
-                return (
-                  <button 
-                    key={project.id}
-                    onClick={() => onSelectProject(project.id)}
-                    className={`group w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                  >
-                    <div className="flex items-center space-x-3 truncate">
-                      {isInbox ? (
-                        <Inbox className={`w-4 h-4 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
-                      ) : isCompleted ? (
-                        <Crown className="w-4 h-4 text-amber-400 animate-bounce" />
-                      ) : (
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
-                      )}
-                      <span className={`truncate text-sm ${isCompleted && activeProjectId !== project.id ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}`}>
-                        {project.name}
-                      </span>
-                    </div>
-                    {!isInbox && (
-                      <Trash2 
-                        onClick={(e) => handleDeleteClick(e, project.id, project.name)}
-                        className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-200' : 'text-slate-400'}`}
-                      />
-                    )}
-                  </button>
-                );
-              })}
+              {activeProjects.map(renderProjectButton)}
             </div>
           </div>
+
+          {completedProjects.length > 0 && (
+            <div className="space-y-2">
+              <div className="px-4">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Checkmated</h3>
+              </div>
+              <div className="space-y-1">
+                {completedProjects.map(renderProjectButton)}
+              </div>
+            </div>
+          )}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
           <div className="flex items-center space-x-3 px-4 py-2 mb-4">
-            {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full" />}
+            {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700" />}
             <span className="text-sm font-medium truncate">{user.displayName}</span>
           </div>
           <button 
@@ -148,7 +169,7 @@ const Dashboard: FC<DashboardProps> = ({
             className="w-full flex items-center space-x-3 px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 transition-colors rounded-lg"
           >
             <LogOut className="w-5 h-5" />
-            <span>Logout</span>
+            <span className="text-sm font-medium">Logout</span>
           </button>
         </div>
       </aside>
@@ -159,7 +180,7 @@ const Dashboard: FC<DashboardProps> = ({
           {!activeProjectId ? (
             <div className="max-w-5xl mx-auto">
               <header className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">The Board</h1>
+                <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-white">The Board</h1>
                 <p className="text-slate-500">Your unified view of active tasks across all projects.</p>
               </header>
 
@@ -172,18 +193,18 @@ const Dashboard: FC<DashboardProps> = ({
                 />
               </div>
 
-              <section className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                  <h2 className="font-semibold flex items-center space-x-2">
+                  <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
                     <ListTodo className="w-5 h-5 text-action-indigo" />
                     <span>Up Next</span>
                   </h2>
-                  <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full font-bold">
+                  <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full font-bold text-slate-600 dark:text-slate-300">
                     {activeTasks.length} tasks
                   </span>
                 </div>
 
-                <div className="p-2 space-y-1">
+                <div className="p-4 space-y-1">
                   {activeTasks.length > 0 ? (
                     activeTasks.map(task => (
                       <div key={task.id} className="relative group">
@@ -205,7 +226,8 @@ const Dashboard: FC<DashboardProps> = ({
                   ) : (
                     <div className="py-12 text-center text-slate-400">
                       <CheckSquare className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                      <p>All caught up! Time for a break?</p>
+                      <p className="font-medium text-lg">All caught up!</p>
+                      <p className="text-sm">Time for a break?</p>
                     </div>
                   )}
                 </div>
