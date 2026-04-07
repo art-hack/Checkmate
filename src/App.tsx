@@ -146,6 +146,59 @@ function App() {
     if (activeProjectId === projectId) setActiveProjectId(null);
   };
 
+  const handleDuplicateProject = (projectId: string, newName: string, copyTasks: boolean) => {
+    const sourceProject = projects.find(p => p.id === projectId);
+    if (!sourceProject) return;
+
+    const newProjectId = Math.random().toString(36).substr(2, 9);
+    const newProject: Project = {
+      ...sourceProject,
+      id: newProjectId,
+      name: newName,
+      createdAt: new Date(),
+      completed: false,
+      progress: 0,
+    };
+
+    // Duplicate Checklists
+    const sourceChecklists = checklists.filter(c => c.projectId === projectId);
+    const checklistIdMap: { [key: string]: string } = {};
+    const newChecklists = sourceChecklists.map(c => {
+      const newId = Math.random().toString(36).substr(2, 9);
+      checklistIdMap[c.id] = newId;
+      return { ...c, id: newId, projectId: newProjectId };
+    });
+
+    let allNewTasks: Task[] = [];
+    if (copyTasks) {
+      const sourceTasks = tasks.filter(t => t.projectId === projectId);
+      const taskIdMap: { [key: string]: string } = {};
+      
+      // First pass: Create new IDs and map them
+      sourceTasks.forEach(t => {
+        taskIdMap[t.id] = Math.random().toString(36).substr(2, 9);
+      });
+
+      // Second pass: Create new task objects with mapped IDs
+      allNewTasks = sourceTasks.map(t => ({
+        ...t,
+        id: taskIdMap[t.id],
+        projectId: newProjectId,
+        checklistId: checklistIdMap[t.checklistId] || t.checklistId,
+        parentId: t.parentId ? taskIdMap[t.parentId] : null,
+        createdAt: new Date(),
+        completed: false, // Reset completion status for templates
+      }));
+    }
+
+    setProjects([...projects, newProject]);
+    setChecklists([...checklists, ...newChecklists]);
+    if (copyTasks) {
+      setTasks([...tasks, ...allNewTasks]);
+    }
+    setActiveProjectId(newProjectId);
+  };
+
   if (loading) {
     return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-action-indigo">Loading...</div>;
   }
@@ -187,6 +240,7 @@ function App() {
         onMoveTask={handleMoveTask}
         onAddProject={handleAddProject}
         onDeleteProject={handleDeleteProject}
+        onDuplicateProject={handleDuplicateProject}
         onLogout={logout}
       >
         {activeProjectId && activeProject && (

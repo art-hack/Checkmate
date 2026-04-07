@@ -50,6 +50,7 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.
 - ✅ Collapsible Sidebar: Sidebar can now be toggled to a minimized icon-only state with centered icons and tooltips.
 - ✅ Strategic Sidebar Organization: "The Board" and "Inbox" are top-level items, followed by Active Projects and "Checkmated" (completed) sections.
+- ✅ Project Templates: Ability to duplicate an entire project, with an option to include or exclude existing tasks.
 - ✅ UI Refinements: Improved Smart Quick-Add flow (direct project-to-section routing) and Board usability.
 
 ## 🛠️ Next Steps / Roadmap

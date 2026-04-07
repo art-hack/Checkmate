@@ -1,8 +1,9 @@
 import { useState, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
+import DuplicateProjectDialog from './DuplicateProjectDialog';
 import type { Project, Task, User, Checklist } from './types';
 
 interface DashboardProps {
@@ -18,6 +19,7 @@ interface DashboardProps {
   onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddProject: (name: string) => void;
   onDeleteProject: (id: string) => void;
+  onDuplicateProject: (projectId: string, newName: string, copyTasks: boolean) => void;
   onLogout: () => void;
   children?: ReactNode;
 }
@@ -35,12 +37,14 @@ const Dashboard: FC<DashboardProps> = ({
   onMoveTask,
   onAddProject,
   onDeleteProject,
+  onDuplicateProject,
   onLogout,
   children
 }) => {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [projectToDuplicate, setProjectToDuplicate] = useState<{ id: string; name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const activeTasks = tasks.filter(t => !t.completed).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -57,6 +61,11 @@ const Dashboard: FC<DashboardProps> = ({
   const handleDeleteClick = (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
     setProjectToDelete({ id, name });
+  };
+
+  const handleDuplicateClick = (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    setProjectToDuplicate({ id, name });
   };
 
   const inboxProject = projects.find(p => p.id === 'inbox');
@@ -90,10 +99,22 @@ const Dashboard: FC<DashboardProps> = ({
           )}
         </div>
         {!isSidebarCollapsed && !isInbox && (
-          <Trash2 
-            onClick={(e) => handleDeleteClick(e, project.id, project.name)}
-            className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-200' : 'text-slate-400'}`}
-          />
+          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button 
+              onClick={(e) => handleDuplicateClick(e, project.id, project.name)}
+              className={`p-1 rounded hover:bg-white/20 transition-colors ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
+              title="Duplicate project"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={(e) => handleDeleteClick(e, project.id, project.name)}
+              className={`p-1 rounded hover:bg-white/20 transition-colors hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
+              title="Delete project"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </button>
     );
@@ -269,6 +290,14 @@ const Dashboard: FC<DashboardProps> = ({
         onConfirm={() => projectToDelete && onDeleteProject(projectToDelete.id)}
         onCancel={() => setProjectToDelete(null)}
         isDanger={true}
+      />
+
+      {/* Duplicate Project Dialog */}
+      <DuplicateProjectDialog 
+        isOpen={!!projectToDuplicate}
+        projectName={projectToDuplicate?.name || ''}
+        onConfirm={(newName, copyTasks) => projectToDuplicate && onDuplicateProject(projectToDuplicate.id, newName, copyTasks)}
+        onCancel={() => setProjectToDuplicate(null)}
       />
     </div>
   );
