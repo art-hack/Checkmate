@@ -48,8 +48,8 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Inline Task Creation: Quick-add tasks directly within checklist columns.
 - ✅ Drag-and-Drop Reordering: Rearrange tasks within checklists using intuitive drag handles.
 - ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.
-- ✅ Inbox System: Dedicated section for unassigned tasks, separated from project lists.
-- ✅ Project Organization: Sidebar now differentiates between Active Projects and "Checkmated" (completed) projects under separate headings.
+- ✅ Collapsible Sidebar: Sidebar can now be toggled to a minimized icon-only state to save horizontal space.
+- ✅ Strategic Sidebar Organization: "The Board" and "Inbox" are top-level items, followed by Active Projects and "Checkmated" (completed) sections.
 - ✅ UI Refinements: Improved Smart Quick-Add flow (direct project-to-section routing) and Board usability.
 
 ## 🛠️ Next Steps / Roadmap

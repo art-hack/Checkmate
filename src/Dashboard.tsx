@@ -1,5 +1,5 @@
 import { useState, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -41,6 +41,7 @@ const Dashboard: FC<DashboardProps> = ({
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const activeTasks = tasks.filter(t => !t.completed).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
@@ -71,21 +72,24 @@ const Dashboard: FC<DashboardProps> = ({
       <button 
         key={project.id}
         onClick={() => onSelectProject(project.id)}
+        title={isSidebarCollapsed ? project.name : ''}
         className={`group w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
       >
         <div className="flex items-center space-x-3 truncate">
           {isInbox ? (
-            <InboxIcon className={`w-4 h-4 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
+            <InboxIcon className={`w-5 h-5 flex-shrink-0 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
           ) : isCompleted ? (
-            <Crown className="w-4 h-4 text-amber-400 animate-bounce" />
+            <Crown className="w-5 h-5 text-amber-400 animate-bounce flex-shrink-0" />
           ) : (
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 mx-1.5 ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
           )}
-          <span className={`truncate text-sm ${isCompleted && activeProjectId !== project.id ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}`}>
-            {project.name}
-          </span>
+          {!isSidebarCollapsed && (
+            <span className={`truncate text-sm ${isCompleted && activeProjectId !== project.id ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}`}>
+              {project.name}
+            </span>
+          )}
         </div>
-        {!isInbox && (
+        {!isSidebarCollapsed && !isInbox && (
           <Trash2 
             onClick={(e) => handleDeleteClick(e, project.id, project.name)}
             className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-200' : 'text-slate-400'}`}
@@ -98,38 +102,50 @@ const Dashboard: FC<DashboardProps> = ({
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-action-indigo flex items-center space-x-2">
-            <CheckSquare className="w-8 h-8" />
-            <span>CheckMate</span>
+      <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 relative`}>
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="absolute -right-3 top-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full p-1 shadow-md z-10 hover:text-action-indigo transition-colors"
+        >
+          {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+
+        <div className={`p-6 ${isSidebarCollapsed ? 'px-4 flex justify-center' : ''}`}>
+          <h2 className="text-2xl font-bold text-action-indigo flex items-center space-x-2 truncate">
+            <CheckSquare className="w-8 h-8 flex-shrink-0" />
+            {!isSidebarCollapsed && <span>CheckMate</span>}
           </h2>
         </div>
 
-        <nav className="flex-grow p-4 space-y-6 overflow-y-auto custom-scrollbar">
+        <nav className="flex-grow p-4 space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden">
           <div className="space-y-1">
             <button 
               onClick={() => onSelectProject(null)}
+              title={isSidebarCollapsed ? 'The Board' : ''}
               className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${!activeProjectId ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
             >
-              <LayoutDashboard className="w-5 h-5" />
-              <span className="text-sm font-medium">The Board</span>
+              <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
+              {!isSidebarCollapsed && <span className="text-sm font-medium">The Board</span>}
             </button>
             {inboxProject && renderProjectButton(inboxProject)}
           </div>
 
           <div className="space-y-4">
-            <div className="px-4 flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>
+            <div className={`px-4 flex items-center justify-between ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              {!isSidebarCollapsed && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>}
               <button 
-                onClick={() => setIsAddingProject(!isAddingProject)}
+                onClick={() => {
+                  if (isSidebarCollapsed) setIsSidebarCollapsed(false);
+                  setIsAddingProject(!isAddingProject);
+                }}
                 className="text-slate-400 hover:text-action-indigo transition-colors"
+                title="Add Project"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
 
-            {isAddingProject && (
+            {!isSidebarCollapsed && isAddingProject && (
               <form onSubmit={handleAddProject} className="px-4">
                 <input 
                   autoFocus
@@ -149,8 +165,12 @@ const Dashboard: FC<DashboardProps> = ({
 
           {completedProjects.length > 0 && (
             <div className="space-y-2">
-              <div className="px-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Checkmated</h3>
+              <div className={`px-4 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+                {!isSidebarCollapsed ? (
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Checkmated</h3>
+                ) : (
+                  <div className="h-px w-full bg-slate-100 dark:bg-slate-800" />
+                )}
               </div>
               <div className="space-y-1">
                 {completedProjects.map(renderProjectButton)}
@@ -159,17 +179,18 @@ const Dashboard: FC<DashboardProps> = ({
           )}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-          <div className="flex items-center space-x-3 px-4 py-2 mb-4">
-            {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700" />}
-            <span className="text-sm font-medium truncate">{user.displayName}</span>
+        <div className={`p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 ${isSidebarCollapsed ? 'px-4 flex flex-col items-center space-y-4' : ''}`}>
+          <div className={`flex items-center space-x-3 px-2 py-2 mb-2 w-full ${isSidebarCollapsed ? 'justify-center mb-0' : ''}`}>
+            {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex-shrink-0" />}
+            {!isSidebarCollapsed && <span className="text-sm font-medium truncate">{user.displayName}</span>}
           </div>
           <button 
             onClick={onLogout}
-            className="w-full flex items-center space-x-3 px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 transition-colors rounded-lg"
+            title={isSidebarCollapsed ? 'Logout' : ''}
+            className={`flex items-center space-x-3 px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 transition-colors rounded-lg w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
           >
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm font-medium">Logout</span>
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            {!isSidebarCollapsed && <span className="text-sm font-medium text-red-600">Logout</span>}
           </button>
         </div>
       </aside>
