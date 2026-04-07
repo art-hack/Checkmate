@@ -62,17 +62,26 @@ function App() {
   // Apply Theme Logic
   useEffect(() => {
     const root = window.document.documentElement;
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
-    const isDark = theme === 'dark' || (theme === 'system' && systemDark);
+    const applyTheme = () => {
+      const systemDark = mediaQuery.matches;
+      const isDark = theme === 'dark' || (theme === 'system' && systemDark);
+      
+      if (isDark) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    };
+
+    applyTheme();
     
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    
+    // Listen for system changes
+    mediaQuery.addEventListener('change', applyTheme);
     localStorage.setItem('checkmate-theme', theme);
+    
+    return () => mediaQuery.removeEventListener('change', applyTheme);
   }, [theme]);
 
   const handleAddTask = (text: string, projectId: string, checklistId: string) => {
