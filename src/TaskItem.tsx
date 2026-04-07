@@ -1,4 +1,5 @@
 import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2, Move, ListTodo, Hash, X, GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -14,6 +15,7 @@ interface TaskItemProps {
   onAddSubtask: (parentId: string, text: string) => void;
   onEdit: (taskId: string, newText: string) => void;
   onMove?: (taskId: string, newProjectId: string, newChecklistId: string) => void;
+  hideGrip?: boolean;
 }
 
 const TaskItem: FC<TaskItemProps> = ({ 
@@ -24,7 +26,8 @@ const TaskItem: FC<TaskItemProps> = ({
   onToggle, 
   onAddSubtask, 
   onEdit,
-  onMove 
+  onMove,
+  hideGrip = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddSubtask, setShowAddSubtask] = useState(false);
@@ -34,8 +37,10 @@ const TaskItem: FC<TaskItemProps> = ({
   
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [selectedMoveProject, setSelectedMoveProject] = useState<Project | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   
   const editInputRef = useRef<HTMLInputElement>(null);
+  const moveButtonRef = useRef<HTMLButtonElement>(null);
 
   const {
     attributes,
@@ -82,6 +87,14 @@ const TaskItem: FC<TaskItemProps> = ({
     setIsEditing(false);
   };
 
+  const handleMoveClick = () => {
+    if (moveButtonRef.current) {
+      const rect = moveButtonRef.current.getBoundingClientRect();
+      setMenuPosition({ top: rect.bottom + window.scrollY, left: rect.right - 256 + window.scrollX });
+    }
+    setShowMoveMenu(!showMoveMenu);
+  };
+
   const handleMoveSelect = (checklistId: string) => {
     if (onMove && selectedMoveProject) {
       onMove(task.id, selectedMoveProject.id, checklistId);
@@ -100,13 +113,15 @@ const TaskItem: FC<TaskItemProps> = ({
     >
       <div className="flex items-center group min-h-[32px]">
         {/* Drag Handle - Absolutely positioned to the left of the item content */}
-        <div 
-          {...attributes} 
-          {...listeners} 
-          className="absolute left-0 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-        >
-          <GripVertical className="w-4 h-4" />
-        </div>
+        {!hideGrip && (
+          <div 
+            {...attributes} 
+            {...listeners} 
+            className="absolute left-0 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+        )}
 
         <button 
           onClick={handleToggle}
@@ -142,7 +157,8 @@ const TaskItem: FC<TaskItemProps> = ({
         <div className="hidden group-hover:flex items-center space-x-1 ml-2">
           {isRootTask && onMove && projects && checklists && (
             <button 
-              onClick={() => setShowMoveMenu(!showMoveMenu)}
+              ref={moveButtonRef}
+              onClick={handleMoveClick}
               className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
               title="Move to project"
             >
@@ -173,61 +189,67 @@ const TaskItem: FC<TaskItemProps> = ({
           )}
         </div>
 
-        {/* Move Menu Dropdown */}
-        <AnimatePresence>
-          {showMoveMenu && projects && checklists && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[100] overflow-hidden"
-            >
-              <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
-                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
-                  {selectedMoveProject ? 'Select Section' : 'Move Task'}
-                </span>
-                <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+        {/* Move Menu Dropdown (Portaled) */}
+        {showMoveMenu && projects && checklists && createPortal(
+          <div 
+            className="fixed z-[300]"
+            style={{ top: menuPosition.top, left: menuPosition.left }}
+          >
+            <AnimatePresence>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                className="w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+              >
+                <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
+                    {selectedMoveProject ? 'Select Section' : 'Move Task'}
+                  </span>
+                  <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
 
-              <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                {!selectedMoveProject ? (
-                  projects.map(p => (
-                    <button 
-                      key={p.id}
-                      onClick={() => setSelectedMoveProject(p)}
-                      className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
-                    >
-                      <Hash className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{p.name}</span>
-                    </button>
-                  ))
-                ) : (
-                  <>
-                    <button 
-                      onClick={() => setSelectedMoveProject(null)}
-                      className="w-full flex items-center space-x-3 px-4 py-2 text-left bg-slate-50 dark:bg-slate-900/50 text-action-indigo font-bold border-b border-slate-100 dark:border-slate-800"
-                    >
-                      <ChevronRight className="w-4 h-4 rotate-180" />
-                      <span className="text-xs">Back to Projects</span>
-                    </button>
-                    {checklists.filter(c => c.projectId === selectedMoveProject.id).map(c => (
+                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                  {!selectedMoveProject ? (
+                    projects.map(p => (
                       <button 
-                        key={c.id}
-                        onClick={() => handleMoveSelect(c.id)}
+                        key={p.id}
+                        onClick={() => setSelectedMoveProject(p)}
                         className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
                       >
-                        <ListTodo className="w-4 h-4 text-action-indigo" />
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
+                        <Hash className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{p.name}</span>
                       </button>
-                    ))}
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    ))
+                  ) : (
+                    <>
+                      <button 
+                        onClick={() => setSelectedMoveProject(null)}
+                        className="w-full flex items-center space-x-3 px-4 py-2 text-left bg-slate-50 dark:bg-slate-900/50 text-action-indigo font-bold border-b border-slate-100 dark:border-slate-800"
+                      >
+                        <ChevronRight className="w-4 h-4 rotate-180" />
+                        <span className="text-xs">Back to Projects</span>
+                      </button>
+                      {checklists.filter(c => c.projectId === selectedMoveProject.id).map(c => (
+                        <button 
+                          key={c.id}
+                          onClick={() => handleMoveSelect(c.id)}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
+                        >
+                          <ListTodo className="w-4 h-4 text-action-indigo" />
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>,
+          document.body
+        )}
       </div>
 
       <AnimatePresence>
@@ -270,6 +292,7 @@ const TaskItem: FC<TaskItemProps> = ({
                 onAddSubtask={onAddSubtask}
                 onEdit={onEdit}
                 onMove={onMove}
+                hideGrip={hideGrip}
               />
             ))}
           </motion.div>

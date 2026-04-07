@@ -138,7 +138,7 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
           onKeyDown={handleKeyDown}
           disabled={!!routingTask}
           placeholder="Add a task... use @Project to route"
-          className="flex-grow bg-transparent outline-none px-4 py-2 text-slate-700 dark:text-slate-200 disabled:opacity-50 transition-colors"
+          className="flex-grow bg-transparent outline-none px-4 py-2 text-slate-900 dark:text-white placeholder:text-slate-400 disabled:opacity-50"
         />
         <button 
           type="submit"
