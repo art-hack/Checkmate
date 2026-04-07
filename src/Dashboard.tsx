@@ -68,14 +68,23 @@ const Dashboard: FC<DashboardProps> = ({
     setProjectToDuplicate({ id, name });
   };
 
+  const getProjectProgress = (projectId: string) => {
+    const projectTasks = tasks.filter(t => t.projectId === projectId);
+    if (projectTasks.length === 0) return 0;
+    const completedTasks = projectTasks.filter(t => t.completed).length;
+    return (completedTasks / projectTasks.length) * 100;
+  };
+
   const inboxProject = projects.find(p => p.id === 'inbox');
   const otherProjects = projects.filter(p => p.id !== 'inbox');
-  const activeProjects = otherProjects.filter(p => p.progress < 100);
-  const completedProjects = otherProjects.filter(p => p.progress === 100);
+  
+  const activeProjects = otherProjects.filter(p => getProjectProgress(p.id) < 100);
+  const completedProjects = otherProjects.filter(p => getProjectProgress(p.id) === 100);
 
   const renderProjectButton = (project: Project) => {
     const isInbox = project.id === 'inbox';
-    const isCompleted = project.progress === 100;
+    const progress = getProjectProgress(project.id);
+    const isCompleted = progress === 100;
     
     return (
       <button 
