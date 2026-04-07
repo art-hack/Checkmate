@@ -73,15 +73,15 @@ const Dashboard: FC<DashboardProps> = ({
         key={project.id}
         onClick={() => onSelectProject(project.id)}
         title={isSidebarCollapsed ? project.name : ''}
-        className={`group w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+        className={`group w-full flex items-center rounded-lg transition-all ${isSidebarCollapsed ? 'justify-center px-0 py-2' : 'justify-between px-4 py-2'} ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
       >
-        <div className="flex items-center space-x-3 truncate">
+        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3 truncate'}`}>
           {isInbox ? (
             <InboxIcon className={`w-5 h-5 flex-shrink-0 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
           ) : isCompleted ? (
             <Crown className="w-5 h-5 text-amber-400 animate-bounce flex-shrink-0" />
           ) : (
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 mx-1.5 ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isSidebarCollapsed ? '' : 'mx-1.5'} ${project.completed ? 'bg-victory-green' : 'bg-slate-400'}`} />
           )}
           {!isSidebarCollapsed && (
             <span className={`truncate text-sm ${isCompleted && activeProjectId !== project.id ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}`}>
@@ -110,19 +110,19 @@ const Dashboard: FC<DashboardProps> = ({
           {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
 
-        <div className={`p-6 ${isSidebarCollapsed ? 'px-4 flex justify-center' : ''}`}>
+        <div className={`p-6 ${isSidebarCollapsed ? 'px-2 flex justify-center' : ''}`}>
           <h2 className="text-2xl font-bold text-action-indigo flex items-center space-x-2 truncate">
             <CheckSquare className="w-8 h-8 flex-shrink-0" />
             {!isSidebarCollapsed && <span>CheckMate</span>}
           </h2>
         </div>
 
-        <nav className="flex-grow p-4 space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden">
+        <nav className={`flex-grow space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden ${isSidebarCollapsed ? 'p-2' : 'p-4'}`}>
           <div className="space-y-1">
             <button 
               onClick={() => onSelectProject(null)}
               title={isSidebarCollapsed ? 'The Board' : ''}
-              className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${!activeProjectId ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+              className={`w-full flex items-center rounded-lg transition-colors ${isSidebarCollapsed ? 'justify-center px-0 py-2' : 'space-x-3 px-4 py-2'} ${!activeProjectId ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
             >
               <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
               {!isSidebarCollapsed && <span className="text-sm font-medium">The Board</span>}
@@ -131,7 +131,7 @@ const Dashboard: FC<DashboardProps> = ({
           </div>
 
           <div className="space-y-4">
-            <div className={`px-4 flex items-center justify-between ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className={`px-4 flex items-center justify-between ${isSidebarCollapsed ? 'px-0 justify-center' : ''}`}>
               {!isSidebarCollapsed && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>}
               <button 
                 onClick={() => {
