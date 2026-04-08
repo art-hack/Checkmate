@@ -27,45 +27,34 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
   2. Prompt user to select a specific section (checklist) from a dropdown.
 - Autocomplete: Shows project suggestions when typing `@`.
 - **Inbox Routing:** Tasks added without a project tag land in the system-level **"Inbox"** project.
+- **Auto-routing:** Bypasses selection if only one checklist exists.
 
 ### Project & Task Migration
 - **Project Deletion:** Sidebar supports project removal with a safety confirmation dialog.
-- **Task Migration:** Root tasks can be moved between projects and sections. Migrating a root task automatically moves all its nested subtasks to maintain hierarchy.
+- **Task Migration:** Root tasks can be moved between projects and sections via a portaled menu.
 
 ### Done Workflow
 - **Strategic Separation:** Horizontal divider between "Active Checklists" and "Mission Accomplished".
 - **Robustness:** Orphaned tasks (whose checklists were deleted) are automatically grouped under "Uncategorized".
-- **Achievement States:** Projects at 100% progress display a "Checkmate" (Crown) badge in the sidebar with unique styling.
+- **Achievement States:** Projects at 100% progress display a "Checkmate" (Crown) badge.
 
 ## 🚀 Current Status
 
-- ✅ React/Vite/TS/PWA Boilerplate.
-- ✅ Firebase Auth & Firestore Persistence: All data is synced in real-time to the cloud, secured by user UID.
-- ✅ System-Level Inbox: Automatic initialization of an Inbox project for new users.
-- ✅ Atomic Operations: Used Firestore batches for consistent project duplication and reordering.
-- ✅ Sidebar project management (Create/Switch/Delete).
-- ✅ Task & Checklist editing (Double-click/Icons).
-- ✅ Responsive wide-screen layout.
-- ✅ Recursive TaskItem components with Project Migration, corrected tree alignment, and portaled move menus for better overlay handling.
-- ✅ Clean Architecture: Extracted business logic into `useCheckmateData` custom hook and separated mock data for better maintainability.
-- ✅ Modular UI: Refactored `ProjectView` into smaller, focused sub-components.
-- ✅ Inline Task Creation: Quick-add tasks directly within checklist columns.
-- ✅ Drag-and-Drop Reordering: Rearrange tasks vertically and checklists horizontally with collision-resistant order calculation.
-- ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.
-- ✅ Collapsible Sidebar: Sidebar can now be toggled to a minimized icon-only state with centered icons and tooltips.
-- ✅ Dark Mode: Integrated dark mode with manual toggle and system preference support.
-- ✅ Strategic Sidebar Organization: "The Board" and "Inbox" are top-level items, followed by Active Projects and "Checkmated" (completed) sections.
-- ✅ UI Consistency: Standardized column widths, improved tree-line alignment, and fixed drag-handle visibility for a surgical layout.
-- ✅ UI Refinements: Improved Smart Quick-Add flow, centered icons in collapsed sidebar, and filtered Board view (no drag handles, root tasks only).
-- ✅ Project Templates: Ability to duplicate an entire project, with an option to include or exclude existing tasks.
-- ✅ Task & Project Cleanup: Recursive task deletion, checklist removal, and "Clear All Done" functionality with themed confirmation dialogs.
+- ✅ Firebase Auth & Firestore Persistence: Real-time cloud sync secured by user UID with robust timestamp handling.
+- ✅ System-Level Inbox: Automatic initialization and top-level Command Center placement.
+- ✅ Sidebar project management (Create/Switch/Delete/Duplicate).
+- ✅ Collapsible Sidebar: Toggleable minimized state with centered icons and tooltips.
+- ✅ Task & Checklist management: Recursive editing, reordering, and themed deletion logic.
+- ✅ UI Refinements: Dark mode (system/manual), glassmorphism, and corrected tree alignment.
+- ✅ Performance & SEO: Manual chunking, sourcemaps, meta tags, and robots.txt.
+- ✅ Accessibility: Comprehensive `aria-label` coverage and keyboard focus states.
 
 ## 🛠️ Next Steps / Roadmap
 
-1. **Persistence Logic:** Replace local mock state in `App.tsx` with real-time Firestore listeners (`onSnapshot`).
-2. **Task Reordering:** Implement drag-and-drop for tasks and checklist columns.
-3. **Project Stats:** Add detailed analytics (e.g., velocity, completion trends).
-4. **Notifications:** Push notifications for task deadlines.
+1. **Task Enrichment:** Implement due dates, priority levels, and urgency-based sorting.
+2. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
+3. **Smart Notifications:** Browser push notifications for upcoming deadlines.
+4. **Global Search:** Command palette (`Ctrl+K`) for instant project/task jumping.
 
 ---
-*Last Updated: April 6, 2026*
+*Last Updated: April 8, 2026*
