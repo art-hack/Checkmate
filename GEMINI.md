@@ -45,6 +45,8 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Task & Checklist editing (Double-click/Icons).
 - ✅ Responsive wide-screen layout.
 - ✅ Recursive TaskItem components with Project Migration, corrected tree alignment, and portaled move menus for better overlay handling.
+- ✅ Clean Architecture: Extracted business logic into `useCheckmateData` custom hook and separated mock data for better maintainability.
+- ✅ Modular UI: Refactored `ProjectView` into smaller, focused sub-components.
 - ✅ Inline Task Creation: Quick-add tasks directly within checklist columns.
 - ✅ Drag-and-Drop Reordering: Rearrange tasks vertically within checklists and reorder checklist columns horizontally using intuitive drag handles.
 - ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.

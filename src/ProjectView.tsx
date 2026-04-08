@@ -24,6 +24,8 @@ import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
 import type { Project, Checklist, Task } from './types';
 
+// --- Sub-components ---
+
 interface SortableChecklistProps {
   checklist: Checklist;
   tasks: Task[];
@@ -148,6 +150,8 @@ const SortableChecklist: FC<SortableChecklistProps> = ({
     </div>
   );
 };
+
+// --- Main Component ---
 
 interface ProjectViewProps {
   project: Project;
