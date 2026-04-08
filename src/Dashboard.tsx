@@ -53,7 +53,13 @@ const Dashboard: FC<DashboardProps> = ({
   const [projectToDuplicate, setProjectToDuplicate] = useState<{ id: string; name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const activeTasks = tasks.filter(t => !t.completed && !t.parentId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const activeTasks = tasks
+    .filter(t => !t.completed && !t.parentId)
+    .sort((a, b) => {
+      const timeA = a.createdAt?.getTime?.() || 0;
+      const timeB = b.createdAt?.getTime?.() || 0;
+      return timeB - timeA;
+    });
 
   const handleAddProject = (e: FormEvent) => {
     e.preventDefault();
