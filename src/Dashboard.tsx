@@ -87,14 +87,14 @@ const Dashboard: FC<DashboardProps> = ({
     return (completedTasks / projectTasks.length) * 100;
   };
 
-  const inboxProject = projects.find(p => p.id === 'inbox');
-  const otherProjects = projects.filter(p => p.id !== 'inbox');
+  const inboxProject = projects.find(p => p.isInbox);
+  const otherProjects = projects.filter(p => !p.isInbox);
   
   const activeProjects = otherProjects.filter(p => getProjectProgress(p.id) < 100);
   const completedProjects = otherProjects.filter(p => getProjectProgress(p.id) === 100);
 
   const renderProjectButton = (project: Project) => {
-    const isInbox = project.id === 'inbox';
+    const isInbox = project.isInbox;
     const progress = getProjectProgress(project.id);
     const isCompleted = progress === 100;
     
