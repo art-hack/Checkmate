@@ -9,9 +9,10 @@ export interface Project {
   id: string;
   name: string;
   ownerId: string;
-  createdAt: Date; // Firestore Timestamp or Date
+  createdAt: any; // Firestore Timestamp
   completed: boolean;
   progress: number;
+  isInbox?: boolean;
 }
 
 export interface Checklist {

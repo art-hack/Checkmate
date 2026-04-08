@@ -9,13 +9,14 @@ import { CheckSquare } from 'lucide-react';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   
   const {
     projects,
     checklists,
     tasks,
+    loading: dataLoading,
     handleAddTask,
     handleToggleTask,
     handleEditTask,
@@ -51,7 +52,7 @@ function App() {
       } else {
         setUser(null);
       }
-      setLoading(false);
+      setAuthLoading(false);
     });
 
     return () => unsubscribe();
@@ -75,25 +76,31 @@ function App() {
 
     applyTheme();
     
-    // Listen for system changes
     mediaQuery.addEventListener('change', applyTheme);
     localStorage.setItem('checkmate-theme', theme);
     
     return () => mediaQuery.removeEventListener('change', applyTheme);
   }, [theme]);
 
-  const onAddProject = (name: string) => {
-    const newId = handleAddProject(name);
-    setActiveProjectId(newId);
-  };
-
-  const onDuplicateProject = (projectId: string, newName: string, copyTasks: boolean) => {
-    const newId = handleDuplicateProject(projectId, newName, copyTasks);
+  const onAddProject = async (name: string) => {
+    const newId = await handleAddProject(name);
     if (newId) setActiveProjectId(newId);
   };
 
-  if (loading) {
-    return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-action-indigo font-bold">Loading Strategy...</div>;
+  const onDuplicateProject = async (projectId: string, newName: string, copyTasks: boolean) => {
+    const newId = await handleDuplicateProject(projectId, newName, copyTasks);
+    if (newId) setActiveProjectId(newId);
+  };
+
+  if (authLoading || (user && dataLoading)) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-action-indigo font-bold italic">
+        <div className="flex flex-col items-center space-y-4">
+          <CheckSquare className="w-12 h-12 animate-pulse" />
+          <span>Loading Strategy...</span>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {

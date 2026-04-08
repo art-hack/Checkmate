@@ -40,7 +40,9 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 ## 🚀 Current Status
 
 - ✅ React/Vite/TS/PWA Boilerplate.
-- ✅ Firebase Auth & Firestore setup (Environment variables secured).
+- ✅ Firebase Auth & Firestore Persistence: All data is synced in real-time to the cloud, secured by user UID.
+- ✅ System-Level Inbox: Automatic initialization of an Inbox project for new users.
+- ✅ Atomic Operations: Used Firestore batches for consistent project duplication and reordering.
 - ✅ Sidebar project management (Create/Switch/Delete).
 - ✅ Task & Checklist editing (Double-click/Icons).
 - ✅ Responsive wide-screen layout.

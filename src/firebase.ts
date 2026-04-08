@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, serverTimestamp, writeBatch, doc } from "firebase/firestore";
 
 // Use environment variables from .env to keep secrets out of source control
 const firebaseConfig = {
@@ -16,6 +16,13 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+
+// Collection References
+export const projectsCol = collection(db, "projects");
+export const checklistsCol = collection(db, "checklists");
+export const tasksCol = collection(db, "tasks");
+
+export { serverTimestamp, writeBatch, doc };
 
 export const signInWithGoogle = async () => {
   try {

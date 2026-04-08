@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper to check if user is logged in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper to check ownership
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    match /projects/{projectId} {
+      allow read, write: if isSignedIn() && isOwner(resource == null ? request.resource.data.ownerId : resource.data.ownerId);
+    }
+
+    match /checklists/{checklistId} {
+      allow read, write: if isSignedIn() && isOwner(resource == null ? request.resource.data.ownerId : resource.data.ownerId);
+    }
+
+    match /tasks/{taskId} {
+      allow read, write: if isSignedIn() && isOwner(resource == null ? request.resource.data.ownerId : resource.data.ownerId);
+    }
+  }
+}

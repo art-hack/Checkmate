@@ -1,208 +1,330 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { 
+  onSnapshot, 
+  query, 
+  where, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  writeBatch, 
+  orderBy
+} from 'firebase/firestore';
+import { db, projectsCol, checklistsCol, tasksCol, serverTimestamp } from './firebase';
 import type { Project, Checklist, Task, User } from './types';
-import { MOCK_PROJECTS, MOCK_CHECKLISTS, MOCK_TASKS } from './mockData';
 
 export const useCheckmateData = (user: User | null) => {
-  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
-  const [checklists, setChecklists] = useState<Checklist[]>(MOCK_CHECKLISTS);
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [checklists, setChecklists] = useState<Checklist[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddTask = (text: string, projectId: string, checklistId: string) => {
-    const projectTasks = tasks.filter(t => t.projectId === projectId && t.checklistId === checklistId && !t.parentId);
-    const maxOrder = projectTasks.length > 0 ? Math.max(...projectTasks.map(t => t.order)) : 0;
+  // 1. Real-time Listeners
+  useEffect(() => {
+    if (!user) {
+      setProjects([]);
+      setChecklists([]);
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
 
-    const newTask: Task = {
-      id: Math.random().toString(36).substr(2, 9),
+    const qProjects = query(projectsCol, where("ownerId", "==", user.uid), orderBy("createdAt", "desc"));
+    const qChecklists = query(checklistsCol, where("ownerId", "==", user.uid), orderBy("order", "asc"));
+    const qTasks = query(tasksCol, where("ownerId", "==", user.uid), orderBy("order", "asc"));
+
+    const unsubProjects = onSnapshot(qProjects, (snapshot) => {
+      const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+      setProjects(projectsData);
+      
+      // Initialize Inbox if it doesn't exist
+      const hasInbox = projectsData.some(p => p.isInbox);
+      if (!hasInbox && snapshot.metadata.fromCache === false) {
+        initializeUserInbox(user.uid);
+      }
+    });
+
+    const unsubChecklists = onSnapshot(qChecklists, (snapshot) => {
+      setChecklists(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Checklist)));
+    });
+
+    const unsubTasks = onSnapshot(qTasks, (snapshot) => {
+      setTasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task)));
+      setLoading(false);
+    });
+
+    return () => {
+      unsubProjects();
+      unsubChecklists();
+      unsubTasks();
+    };
+  }, [user]);
+
+  // 2. Initialization Helpers
+  const initializeUserInbox = async (uid: string) => {
+    const inboxRef = await addDoc(projectsCol, {
+      name: 'Inbox',
+      ownerId: uid,
+      createdAt: serverTimestamp(),
+      completed: false,
+      progress: 0,
+      isInbox: true
+    });
+
+    await addDoc(checklistsCol, {
+      name: 'General',
+      projectId: inboxRef.id,
+      ownerId: uid,
+      order: 1
+    });
+  };
+
+  // 3. Handlers
+  const handleAddTask = async (text: string, projectId: string, checklistId: string) => {
+    if (!user) return;
+    
+    // Find max order for sibling tasks
+    const siblingTasks = tasks.filter(t => t.projectId === projectId && t.checklistId === checklistId && !t.parentId);
+    const maxOrder = siblingTasks.length > 0 ? Math.max(...siblingTasks.map(t => t.order)) : 0;
+
+    await addDoc(tasksCol, {
       text,
       completed: false,
-      projectId: projectId || 'inbox',
-      checklistId: checklistId || (checklists.find(c => c.projectId === (projectId || 'inbox'))?.id || 'c-inbox'),
+      projectId,
+      checklistId,
       parentId: null,
-      ownerId: user?.uid || 'u1',
+      ownerId: user.uid,
       order: maxOrder + 1,
-      createdAt: new Date(),
-    };
-    setTasks([...tasks, newTask]);
+      createdAt: serverTimestamp()
+    });
   };
 
-  const handleToggleTask = (taskId: string) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
+  const handleToggleTask = async (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    await updateDoc(doc(db, "tasks", taskId), {
+      completed: !task.completed
+    });
   };
 
-  const handleEditTask = (taskId: string, newText: string) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, text: newText } : t));
+  const handleEditTask = async (taskId: string, newText: string) => {
+    await updateDoc(doc(db, "tasks", taskId), {
+      text: newText
+    });
   };
 
-  const handleMoveTask = (taskId: string, newProjectId: string, newChecklistId: string) => {
+  const handleMoveTask = async (taskId: string, newProjectId: string, newChecklistId: string) => {
+    if (!user) return;
+    const batch = writeBatch(db);
+    
+    // Find all descendants
     const findDescendantIds = (parentId: string): string[] => {
       const children = tasks.filter(t => t.parentId === parentId);
       return children.reduce((acc, child) => [...acc, child.id, ...findDescendantIds(child.id)], [] as string[]);
     };
 
     const idsToMove = [taskId, ...findDescendantIds(taskId)];
-    setTasks(tasks.map(t => idsToMove.includes(t.id) ? { ...t, projectId: newProjectId, checklistId: newChecklistId } : t));
+    
+    idsToMove.forEach(id => {
+      const taskRef = doc(db, "tasks", id);
+      batch.update(taskRef, {
+        projectId: newProjectId,
+        checklistId: newChecklistId
+      });
+    });
+
+    await batch.commit();
   };
 
-  const handleReorderTasks = (_projectId: string, _checklistId: string, _parentId: string | null, newOrderedTasks: Task[]) => {
-    const updatedTasks = [...tasks];
+  const handleReorderTasks = async (_projectId: string, _checklistId: string, _parentId: string | null, newOrderedTasks: Task[]) => {
+    const batch = writeBatch(db);
     newOrderedTasks.forEach((task, index) => {
-      const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
-      if (taskIndex !== -1) {
-        updatedTasks[taskIndex] = { ...updatedTasks[taskIndex], order: index + 1 };
-      }
+      const taskRef = doc(db, "tasks", task.id);
+      batch.update(taskRef, { order: index + 1 });
     });
-    setTasks(updatedTasks);
+    await batch.commit();
   };
 
-  const handleReorderChecklists = (_projectId: string, newOrderedChecklists: Checklist[]) => {
-    const updatedChecklists = [...checklists];
+  const handleReorderChecklists = async (_projectId: string, newOrderedChecklists: Checklist[]) => {
+    const batch = writeBatch(db);
     newOrderedChecklists.forEach((checklist, index) => {
-      const checklistIndex = updatedChecklists.findIndex(c => c.id === checklist.id);
-      if (checklistIndex !== -1) {
-        updatedChecklists[checklistIndex] = { ...updatedChecklists[checklistIndex], order: index + 1 };
-      }
+      const checklistRef = doc(db, "checklists", checklist.id);
+      batch.update(checklistRef, { order: index + 1 });
     });
-    setChecklists(updatedChecklists);
+    await batch.commit();
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
+    const batch = writeBatch(db);
+    
     const findDescendantIds = (parentId: string): string[] => {
       const children = tasks.filter(t => t.parentId === parentId);
       return children.reduce((acc, child) => [...acc, child.id, ...findDescendantIds(child.id)], [] as string[]);
     };
 
     const idsToDelete = [taskId, ...findDescendantIds(taskId)];
-    setTasks(tasks.filter(t => !idsToDelete.includes(t.id)));
+    idsToDelete.forEach(id => {
+      batch.delete(doc(db, "tasks", id));
+    });
+
+    await batch.commit();
   };
 
-  const handleAddSubtask = (parentId: string, text: string) => {
+  const handleAddSubtask = async (parentId: string, text: string) => {
+    if (!user) return;
     const parentTask = tasks.find(t => t.id === parentId);
     if (!parentTask) return;
 
     const siblingTasks = tasks.filter(t => t.parentId === parentId);
     const maxOrder = siblingTasks.length > 0 ? Math.max(...siblingTasks.map(t => t.order)) : 0;
 
-    const newSubtask: Task = {
-      id: Math.random().toString(36).substr(2, 9),
+    await addDoc(tasksCol, {
       text,
       completed: false,
       projectId: parentTask.projectId,
       checklistId: parentTask.checklistId,
       parentId,
-      ownerId: user?.uid || 'u1',
+      ownerId: user.uid,
       order: maxOrder + 1,
-      createdAt: new Date(),
-    };
-    setTasks([...tasks, newSubtask]);
+      createdAt: serverTimestamp()
+    });
   };
 
-  const handleAddProject = (name: string) => {
-    const newProject: Project = {
-      id: Math.random().toString(36).substr(2, 9),
+  const handleAddProject = async (name: string) => {
+    if (!user) return "";
+    const docRef = await addDoc(projectsCol, {
       name,
-      ownerId: user?.uid || 'u1',
-      createdAt: new Date(),
+      ownerId: user.uid,
+      createdAt: serverTimestamp(),
       completed: false,
-      progress: 0,
-    };
-    setProjects([...projects, newProject]);
-    
-    const newChecklist: Checklist = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: 'General',
-      projectId: newProject.id,
-      order: 1,
-    };
-    setChecklists([...checklists, newChecklist]);
-    return newProject.id;
-  };
-
-  const handleDeleteProject = (projectId: string) => {
-    if (projectId === 'inbox') return;
-    setProjects(projects.filter(p => p.id !== projectId));
-    setChecklists(checklists.filter(c => c.projectId !== projectId));
-    setTasks(tasks.filter(t => t.projectId !== projectId));
-  };
-
-  const handleDuplicateProject = (projectId: string, newName: string, copyTasks: boolean) => {
-    const sourceProject = projects.find(p => p.id === projectId);
-    if (!sourceProject) return;
-
-    const newProjectId = Math.random().toString(36).substr(2, 9);
-    const newProject: Project = {
-      ...sourceProject,
-      id: newProjectId,
-      name: newName,
-      createdAt: new Date(),
-      completed: false,
-      progress: 0,
-    };
-
-    const sourceChecklists = checklists.filter(c => c.projectId === projectId);
-    const checklistIdMap: { [key: string]: string } = {};
-    const newChecklists = sourceChecklists.map(c => {
-      const newId = Math.random().toString(36).substr(2, 9);
-      checklistIdMap[c.id] = newId;
-      return { ...c, id: newId, projectId: newProjectId };
+      progress: 0
     });
 
-    let allNewTasks: Task[] = [];
+    await addDoc(checklistsCol, {
+      name: 'General',
+      projectId: docRef.id,
+      ownerId: user.uid,
+      order: 1
+    });
+
+    return docRef.id;
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || project.isInbox) return;
+
+    const batch = writeBatch(db);
+    
+    batch.delete(doc(db, "projects", projectId));
+
+    const projectChecklists = checklists.filter(c => c.projectId === projectId);
+    projectChecklists.forEach(c => batch.delete(doc(db, "checklists", c.id)));
+
+    const projectTasks = tasks.filter(t => t.projectId === projectId);
+    projectTasks.forEach(t => batch.delete(doc(db, "tasks", t.id)));
+
+    await batch.commit();
+  };
+
+  const handleDuplicateProject = async (projectId: string, newName: string, copyTasks: boolean) => {
+    if (!user) return "";
+    const sourceProject = projects.find(p => p.id === projectId);
+    if (!sourceProject) return "";
+
+    // 1. Create new project
+    const newProjectRef = await addDoc(projectsCol, {
+      name: newName,
+      ownerId: user.uid,
+      createdAt: serverTimestamp(),
+      completed: false,
+      progress: 0
+    });
+    const newProjectId = newProjectRef.id;
+
+    // 2. Duplicate Checklists
+    const sourceChecklists = checklists.filter(c => c.projectId === projectId);
+    const checklistIdMap: { [key: string]: string } = {};
+    
+    for (const c of sourceChecklists) {
+      const newChecklistRef = await addDoc(checklistsCol, {
+        name: c.name,
+        projectId: newProjectId,
+        ownerId: user.uid,
+        order: c.order
+      });
+      checklistIdMap[c.id] = newChecklistRef.id;
+    }
+
+    // 3. Duplicate Tasks if requested
     if (copyTasks) {
       const sourceTasks = tasks.filter(t => t.projectId === projectId);
-      const taskIdMap: { [key: string]: string } = {};
-      sourceTasks.forEach(t => {
-        taskIdMap[t.id] = Math.random().toString(36).substr(2, 9);
-      });
+      const rootTasks = sourceTasks.filter(t => !t.parentId);
+      
+      const duplicateTasksRecursive = async (oldTasks: Task[], newParentId: string | null) => {
+        for (const t of oldTasks) {
+          const newDocRef = await addDoc(tasksCol, {
+            text: t.text,
+            completed: false,
+            projectId: newProjectId,
+            checklistId: checklistIdMap[t.checklistId] || "",
+            parentId: newParentId,
+            ownerId: user.uid,
+            order: t.order,
+            createdAt: serverTimestamp()
+          });
+          
+          const subtasks = sourceTasks.filter(st => st.parentId === t.id);
+          if (subtasks.length > 0) {
+            await duplicateTasksRecursive(subtasks, newDocRef.id);
+          }
+        }
+      };
 
-      allNewTasks = sourceTasks.map(t => ({
-        ...t,
-        id: taskIdMap[t.id],
-        projectId: newProjectId,
-        checklistId: checklistIdMap[t.checklistId] || t.checklistId,
-        parentId: t.parentId ? taskIdMap[t.parentId] : null,
-        createdAt: new Date(),
-        completed: false,
-      }));
+      await duplicateTasksRecursive(rootTasks, null);
     }
 
-    setProjects([...projects, newProject]);
-    setChecklists([...checklists, ...newChecklists]);
-    if (copyTasks) {
-      setTasks([...tasks, ...allNewTasks]);
-    }
     return newProjectId;
   };
 
-  const handleDeleteChecklist = (checklistId: string) => {
-    setChecklists(checklists.filter(c => c.id !== checklistId));
-    setTasks(tasks.filter(t => t.checklistId !== checklistId));
+  const handleDeleteChecklist = async (checklistId: string) => {
+    const batch = writeBatch(db);
+    batch.delete(doc(db, "checklists", checklistId));
+    
+    const checklistTasks = tasks.filter(t => t.checklistId === checklistId);
+    checklistTasks.forEach(t => batch.delete(doc(db, "tasks", t.id)));
+    
+    await batch.commit();
   };
 
-  const handleEditChecklist = (id: string, name: string) => {
-    setChecklists(checklists.map(c => c.id === id ? { ...c, name } : c));
+  const handleEditChecklist = async (id: string, name: string) => {
+    await updateDoc(doc(db, "checklists", id), { name });
   };
 
-  const handleClearDoneTasks = (projectId: string) => {
-    setTasks(tasks.filter(t => !(t.projectId === projectId && t.completed)));
+  const handleClearDoneTasks = async (projectId: string) => {
+    const batch = writeBatch(db);
+    const doneTasks = tasks.filter(t => t.projectId === projectId && t.completed);
+    doneTasks.forEach(t => batch.delete(doc(db, "tasks", t.id)));
+    await batch.commit();
   };
 
-  const onAddChecklist = (name: string, projectId: string) => {
+  const onAddChecklist = async (name: string, projectId: string) => {
+    if (!user) return;
     const projectChecklists = checklists.filter(c => c.projectId === projectId);
     const maxOrder = projectChecklists.length > 0 ? Math.max(...projectChecklists.map(c => c.order)) : 0;
 
-    const newChecklist: Checklist = {
-      id: Math.random().toString(36).substr(2, 9),
+    await addDoc(checklistsCol, {
       name,
       projectId,
-      order: maxOrder + 1,
-    };
-    setChecklists([...checklists, newChecklist]);
+      ownerId: user.uid,
+      order: maxOrder + 1
+    });
   };
 
   return {
     projects,
     checklists,
     tasks,
+    loading,
     handleAddTask,
     handleToggleTask,
     handleEditTask,
