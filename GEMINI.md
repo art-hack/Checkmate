@@ -46,7 +46,7 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Responsive wide-screen layout.
 - ✅ Recursive TaskItem components with Project Migration, corrected tree alignment, and portaled move menus for better overlay handling.
 - ✅ Inline Task Creation: Quick-add tasks directly within checklist columns.
-- ✅ Drag-and-Drop Reordering: Rearrange tasks within checklists using intuitive drag handles.
+- ✅ Drag-and-Drop Reordering: Rearrange tasks vertically within checklists and reorder checklist columns horizontally using intuitive drag handles.
 - ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.
 - ✅ Collapsible Sidebar: Sidebar can now be toggled to a minimized icon-only state with centered icons and tooltips.
 - ✅ Dark Mode: Integrated dark mode with manual toggle and system preference support.

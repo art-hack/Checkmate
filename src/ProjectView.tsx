@@ -1,5 +1,5 @@
-import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
-import { Plus, Edit2, CheckCircle2, Trash2, Eraser } from 'lucide-react';
+import { useState, type FC, type FormEvent, useRef, useEffect, type ReactNode, type RefObject } from 'react';
+import { Plus, Edit2, CheckCircle2, Trash2, Eraser, GripVertical } from 'lucide-react';
 import { 
   DndContext, 
   closestCenter,
@@ -14,12 +14,140 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  horizontalListSortingStrategy,
+  useSortable
 } from '@dnd-kit/sortable';
-import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import { restrictToVerticalAxis, restrictToParentElement, restrictToHorizontalAxis } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
 import ProgressBar from './ProgressBar';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
 import type { Project, Checklist, Task } from './types';
+
+interface SortableChecklistProps {
+  checklist: Checklist;
+  tasks: Task[];
+  allProjects: Project[];
+  allChecklists: Checklist[];
+  editingChecklistId: string | null;
+  editChecklistName: string;
+  inlineTaskText: { [key: string]: string };
+  renderTasks: (checklistId: string, isDoneSection: boolean) => ReactNode;
+  onEditChecklist: (id: string, name: string) => void;
+  onDeleteChecklist: (id: string, name: string) => void;
+  onAddInlineTask: (e: FormEvent, checklistId: string) => void;
+  setInlineTaskText: (val: { [key: string]: string }) => void;
+  setEditingChecklistId: (id: string | null) => void;
+  setEditChecklistName: (name: string) => void;
+  handleEditChecklistSubmit: (e?: FormEvent) => void;
+  editChecklistInputRef: RefObject<HTMLInputElement | null>;
+}
+
+const SortableChecklist: FC<SortableChecklistProps> = ({
+  checklist,
+  editingChecklistId,
+  editChecklistName,
+  inlineTaskText,
+  renderTasks,
+  setInlineTaskText,
+  setEditingChecklistId,
+  setEditChecklistName,
+  onDeleteChecklist,
+  handleEditChecklistSubmit,
+  editChecklistInputRef,
+  onAddInlineTask
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: checklist.id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className="min-w-[320px] max-w-[400px] flex-shrink-0 glass-card rounded-2xl p-5 flex flex-col h-full transition-colors relative"
+    >
+      <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 group flex-shrink-0">
+        <div className="flex items-center flex-grow min-w-0">
+          <div 
+            {...attributes} 
+            {...listeners} 
+            className="mr-2 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 transition-opacity"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+          
+          {editingChecklistId === checklist.id ? (
+            <form onSubmit={handleEditChecklistSubmit} className="flex-grow">
+              <input
+                ref={editChecklistInputRef}
+                type="text"
+                value={editChecklistName}
+                onChange={(e) => setEditChecklistName(e.target.value)}
+                onBlur={() => handleEditChecklistSubmit()}
+                className="w-full bg-transparent outline-none font-bold text-lg text-slate-800 dark:text-slate-100"
+              />
+            </form>
+          ) : (
+            <>
+              <h2 className="text-lg font-bold truncate cursor-pointer text-slate-800 dark:text-slate-100 flex-grow" onDoubleClick={() => {
+                setEditingChecklistId(checklist.id);
+                setEditChecklistName(checklist.name);
+              }}>
+                {checklist.name}
+              </h2>
+              <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button 
+                  onClick={() => {
+                    setEditingChecklistId(checklist.id);
+                    setEditChecklistName(checklist.name);
+                  }}
+                  className="text-slate-400 hover:text-action-indigo p-1"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => onDeleteChecklist(checklist.id, checklist.name)}
+                  className="text-slate-400 hover:text-red-500 p-1"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <form onSubmit={(e) => onAddInlineTask(e, checklist.id)} className="mb-4 flex-shrink-0">
+        <div className="flex items-center bg-slate-50 dark:bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-100 dark:border-slate-700 focus-within:border-action-indigo transition-colors">
+          <Plus className="w-4 h-4 text-slate-400 mr-2" />
+          <input 
+            type="text"
+            value={inlineTaskText[checklist.id] || ''}
+            onChange={(e) => setInlineTaskText({ ...inlineTaskText, [checklist.id]: e.target.value })}
+            placeholder="Add task..."
+            className="bg-transparent outline-none text-sm w-full text-slate-700 dark:text-slate-200"
+          />
+        </div>
+      </form>
+      
+      <div className="space-y-1 overflow-y-auto flex-grow min-h-0 custom-scrollbar pr-1">
+        {renderTasks(checklist.id, false)}
+      </div>
+    </div>
+  );
+};
 
 interface ProjectViewProps {
   project: Project;
@@ -37,6 +165,7 @@ interface ProjectViewProps {
   onDeleteChecklist: (checklistId: string) => void;
   onAddTask: (text: string, projectId: string, checklistId: string) => void;
   onReorderTasks: (projectId: string, checklistId: string, parentId: string | null, newTasks: Task[]) => void;
+  onReorderChecklists: (projectId: string, newChecklists: Checklist[]) => void;
   onClearDoneTasks: (projectId: string) => void;
 }
 
@@ -56,6 +185,7 @@ const ProjectView: FC<ProjectViewProps> = ({
   onDeleteChecklist,
   onAddTask,
   onReorderTasks,
+  onReorderChecklists,
   onClearDoneTasks
 }) => {
   const [globalDone, setGlobalDone] = useState(false);
@@ -113,7 +243,7 @@ const ProjectView: FC<ProjectViewProps> = ({
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent, checklistId: string, parentId: string | null) => {
+  const handleTaskDragEnd = (event: DragEndEvent, checklistId: string, parentId: string | null) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -123,6 +253,18 @@ const ProjectView: FC<ProjectViewProps> = ({
       
       const newTasks = arrayMove(filteredTasks, oldIndex, newIndex);
       onReorderTasks(project.id, checklistId, parentId, newTasks);
+    }
+  };
+
+  const handleChecklistDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = checklists.findIndex(c => c.id === active.id);
+      const newIndex = checklists.findIndex(c => c.id === over.id);
+      
+      const newChecklists = arrayMove(checklists, oldIndex, newIndex);
+      onReorderChecklists(project.id, newChecklists);
     }
   };
 
@@ -152,7 +294,7 @@ const ProjectView: FC<ProjectViewProps> = ({
       <DndContext 
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragEnd={(e) => handleDragEnd(e, checklistId, null)}
+        onDragEnd={(e) => handleTaskDragEnd(e, checklistId, null)}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
       >
         <SortableContext 
@@ -219,69 +361,42 @@ const ProjectView: FC<ProjectViewProps> = ({
             <div className="w-2 h-2 rounded-full bg-action-indigo animate-pulse" />
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Checklists</h3>
           </div>
-          <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[400px] custom-scrollbar">
-            {checklists.map(checklist => (
-              <div key={checklist.id} className="min-w-[320px] max-w-[400px] flex-shrink-0 glass-card rounded-2xl p-5 flex flex-col h-full transition-colors">
-                <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 group flex-shrink-0">
-                  {editingChecklistId === checklist.id ? (
-                    <form onSubmit={handleEditChecklistSubmit} className="flex-grow">
-                      <input
-                        ref={editChecklistInputRef}
-                        type="text"
-                        value={editChecklistName}
-                        onChange={(e) => setEditChecklistName(e.target.value)}
-                        onBlur={() => handleEditChecklistSubmit()}
-                        className="w-full bg-transparent outline-none font-bold text-lg text-slate-800 dark:text-slate-100"
-                      />
-                    </form>
-                  ) : (
-                    <>
-                      <h2 className="text-lg font-bold truncate cursor-pointer text-slate-800 dark:text-slate-100 flex-grow" onDoubleClick={() => {
-                        setEditingChecklistId(checklist.id);
-                        setEditChecklistName(checklist.name);
-                      }}>
-                        {checklist.name}
-                      </h2>
-                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button 
-                          onClick={() => {
-                            setEditingChecklistId(checklist.id);
-                            setEditChecklistName(checklist.name);
-                          }}
-                          className="text-slate-400 hover:text-action-indigo p-1"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => setChecklistToDelete({ id: checklist.id, name: checklist.name })}
-                          className="text-slate-400 hover:text-red-500 p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <form onSubmit={(e) => handleAddInlineTask(e, checklist.id)} className="mb-4 flex-shrink-0">
-                  <div className="flex items-center bg-slate-50 dark:bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-100 dark:border-slate-700 focus-within:border-action-indigo transition-colors">
-                    <Plus className="w-4 h-4 text-slate-400 mr-2" />
-                    <input 
-                      type="text"
-                      value={inlineTaskText[checklist.id] || ''}
-                      onChange={(e) => setInlineTaskText({ ...inlineTaskText, [checklist.id]: e.target.value })}
-                      placeholder="Add task..."
-                      className="bg-transparent outline-none text-sm w-full text-slate-700 dark:text-slate-200"
-                    />
-                  </div>
-                </form>
-                
-                <div className="space-y-1 overflow-y-auto flex-grow min-h-0 custom-scrollbar pr-1">
-                  {renderTasks(checklist.id, false)}
-                </div>
-              </div>
-            ))}
-          </div>
+          
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleChecklistDragEnd}
+            modifiers={[restrictToHorizontalAxis, restrictToParentElement]}
+          >
+            <div className="flex space-x-6 pb-4 overflow-x-auto min-h-[400px] custom-scrollbar">
+              <SortableContext 
+                items={checklists.map(c => c.id)}
+                strategy={horizontalListSortingStrategy}
+              >
+                {checklists.map(checklist => (
+                  <SortableChecklist
+                    key={checklist.id}
+                    checklist={checklist}
+                    tasks={tasks}
+                    allProjects={allProjects}
+                    allChecklists={allChecklists}
+                    editingChecklistId={editingChecklistId}
+                    editChecklistName={editChecklistName}
+                    inlineTaskText={inlineTaskText}
+                    renderTasks={renderTasks}
+                    onEditChecklist={onEditChecklist}
+                    onDeleteChecklist={(id, name) => setChecklistToDelete({ id, name })}
+                    onAddInlineTask={handleAddInlineTask}
+                    setInlineTaskText={setInlineTaskText}
+                    setEditingChecklistId={setEditingChecklistId}
+                    setEditChecklistName={setEditChecklistName}
+                    handleEditChecklistSubmit={handleEditChecklistSubmit}
+                    editChecklistInputRef={editChecklistInputRef}
+                  />
+                ))}
+              </SortableContext>
+            </div>
+          </DndContext>
         </section>
 
         {/* Done Section (Horizontal Separation) */}

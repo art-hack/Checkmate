@@ -130,6 +130,19 @@ function App() {
     setTasks(updatedTasks);
   };
 
+  const handleReorderChecklists = (_projectId: string, newOrderedChecklists: Checklist[]) => {
+    const updatedChecklists = [...checklists];
+    
+    newOrderedChecklists.forEach((checklist, index) => {
+      const checklistIndex = updatedChecklists.findIndex(c => c.id === checklist.id);
+      if (checklistIndex !== -1) {
+        updatedChecklists[checklistIndex] = { ...updatedChecklists[checklistIndex], order: index + 1 };
+      }
+    });
+
+    setChecklists(updatedChecklists);
+  };
+
   const handleDeleteTask = (taskId: string) => {
     const findDescendantIds = (parentId: string): string[] => {
       const children = tasks.filter(t => t.parentId === parentId);
@@ -256,7 +269,7 @@ function App() {
   if (!user) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center max-w-sm w-full">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 text-center max-sm w-full">
           <CheckSquare className="w-16 h-16 text-action-indigo mx-auto mb-6" />
           <h1 className="text-3xl font-bold mb-2">CheckMate</h1>
           <p className="text-slate-500 mb-8">Master your projects with strategic precision.</p>
@@ -272,7 +285,7 @@ function App() {
   }
 
   const activeProject = projects.find(p => p.id === activeProjectId);
-  const activeProjectChecklists = checklists.filter(c => c.projectId === activeProjectId);
+  const activeProjectChecklists = checklists.filter(c => c.projectId === activeProjectId).sort((a, b) => a.order - b.order);
   const activeProjectTasks = tasks.filter(t => t.projectId === activeProjectId);
 
   return (
@@ -310,6 +323,7 @@ function App() {
             onMoveTask={handleMoveTask}
             onAddTask={handleAddTask}
             onReorderTasks={handleReorderTasks}
+            onReorderChecklists={handleReorderChecklists}
             onDeleteChecklist={handleDeleteChecklist}
             onClearDoneTasks={handleClearDoneTasks}
             onAddChecklist={(name) => {
