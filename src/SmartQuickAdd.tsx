@@ -78,11 +78,19 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
     if (input.trim()) {
       const { text, project } = parseSmartTask(input);
       
-      // Use the parsed project, or the active one, or the first one as a fallback
-      const targetProject = project || (activeProjectId ? projects.find(p => p.id === activeProjectId) : projects[0]);
+      // Default to Inbox if no project specified and no active project
+      const targetProject = project || (activeProjectId ? projects.find(p => p.id === activeProjectId) : projects.find(p => p.isInbox));
 
       if (targetProject) {
-        setRoutingTask({ text, project: targetProject });
+        const projectChecklists = checklists.filter(c => c.projectId === targetProject.id);
+        
+        // Auto-assign if only one checklist exists
+        if (projectChecklists.length === 1) {
+          onAddTask(text, targetProject.id, projectChecklists[0].id);
+          setInput('');
+        } else {
+          setRoutingTask({ text, project: targetProject });
+        }
       }
     }
   };
@@ -105,7 +113,9 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
         setSuggestionIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
       } else if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault();
-        selectSuggestion(suggestions[suggestionIndex]);
+        if (suggestions[suggestionIndex]) {
+          selectSuggestion(suggestions[suggestionIndex]);
+        }
       } else if (e.key === 'Escape') {
         setShowSuggestions(false);
       }
@@ -115,9 +125,16 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
   const selectSuggestion = (project: Project) => {
     const atIndex = input.lastIndexOf('@');
     const text = input.substring(0, atIndex).trim() || 'New Task';
-    setRoutingTask({ text, project });
+    const projectChecklists = checklists.filter(c => c.projectId === project.id);
+
+    // Auto-assign if only one checklist exists
+    if (projectChecklists.length === 1) {
+      onAddTask(text, project.id, projectChecklists[0].id);
+      setInput('');
+    } else {
+      setRoutingTask({ text, project });
+    }
     setShowSuggestions(false);
-    setInput('');
   };
 
   const targetProjectChecklists = routingTask 
