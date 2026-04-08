@@ -8,6 +8,9 @@ export const useCheckmateData = (user: User | null) => {
   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
 
   const handleAddTask = (text: string, projectId: string, checklistId: string) => {
+    const projectTasks = tasks.filter(t => t.projectId === projectId && t.checklistId === checklistId && !t.parentId);
+    const maxOrder = projectTasks.length > 0 ? Math.max(...projectTasks.map(t => t.order)) : 0;
+
     const newTask: Task = {
       id: Math.random().toString(36).substr(2, 9),
       text,
@@ -16,7 +19,7 @@ export const useCheckmateData = (user: User | null) => {
       checklistId: checklistId || (checklists.find(c => c.projectId === (projectId || 'inbox'))?.id || 'c-inbox'),
       parentId: null,
       ownerId: user?.uid || 'u1',
-      order: tasks.filter(t => t.projectId === projectId && t.checklistId === checklistId).length + 1,
+      order: maxOrder + 1,
       createdAt: new Date(),
     };
     setTasks([...tasks, newTask]);
@@ -76,6 +79,9 @@ export const useCheckmateData = (user: User | null) => {
     const parentTask = tasks.find(t => t.id === parentId);
     if (!parentTask) return;
 
+    const siblingTasks = tasks.filter(t => t.parentId === parentId);
+    const maxOrder = siblingTasks.length > 0 ? Math.max(...siblingTasks.map(t => t.order)) : 0;
+
     const newSubtask: Task = {
       id: Math.random().toString(36).substr(2, 9),
       text,
@@ -84,7 +90,7 @@ export const useCheckmateData = (user: User | null) => {
       checklistId: parentTask.checklistId,
       parentId,
       ownerId: user?.uid || 'u1',
-      order: tasks.filter(t => t.parentId === parentId).length + 1,
+      order: maxOrder + 1,
       createdAt: new Date(),
     };
     setTasks([...tasks, newSubtask]);
@@ -181,11 +187,14 @@ export const useCheckmateData = (user: User | null) => {
   };
 
   const onAddChecklist = (name: string, projectId: string) => {
+    const projectChecklists = checklists.filter(c => c.projectId === projectId);
+    const maxOrder = projectChecklists.length > 0 ? Math.max(...projectChecklists.map(c => c.order)) : 0;
+
     const newChecklist: Checklist = {
       id: Math.random().toString(36).substr(2, 9),
       name,
       projectId,
-      order: checklists.filter(c => c.projectId === projectId).length + 1,
+      order: maxOrder + 1,
     };
     setChecklists([...checklists, newChecklist]);
   };

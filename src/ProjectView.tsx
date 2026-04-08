@@ -428,7 +428,9 @@ const ProjectView: FC<ProjectViewProps> = ({
             
             <div className="flex space-x-6 pb-8 overflow-x-auto custom-scrollbar">
               {checklists.map(checklist => {
-                const completedTasks = tasks.filter(t => t.checklistId === checklist.id && t.completed && !t.parentId);
+                const completedTasks = tasks
+                  .filter(t => t.checklistId === checklist.id && t.completed && !t.parentId)
+                  .sort((a, b) => a.order - b.order);
                 if (completedTasks.length === 0) return null;
 
                 return (

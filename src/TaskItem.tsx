@@ -121,15 +121,15 @@ const TaskItem: FC<TaskItemProps> = ({
     <div 
       ref={setNodeRef}
       style={style}
-      className={`relative ${task.parentId ? 'ml-6 border-l-2 border-slate-200 dark:border-slate-800 pl-4' : 'pl-6'} pr-4 py-1.5 ${isDragging ? 'z-50' : ''}`}
+      className={`relative ${task.parentId ? 'ml-8 border-l-2 border-slate-200 dark:border-slate-800 pl-4' : 'pl-8'} pr-4 py-1.5 min-w-0 ${isDragging ? 'z-50' : ''}`}
     >
-      <div className="flex items-center group min-h-[32px]">
+      <div className="flex items-center group min-h-[32px] min-w-0">
         {/* Drag Handle - Absolutely positioned to the left of the item content */}
         {!hideGrip && (
           <div 
             {...attributes} 
             {...listeners} 
-            className="absolute left-0 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+            className="absolute left-2 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
           >
             <GripVertical className="w-4 h-4" />
           </div>

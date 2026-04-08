@@ -48,12 +48,12 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Clean Architecture: Extracted business logic into `useCheckmateData` custom hook and separated mock data for better maintainability.
 - ✅ Modular UI: Refactored `ProjectView` into smaller, focused sub-components.
 - ✅ Inline Task Creation: Quick-add tasks directly within checklist columns.
-- ✅ Drag-and-Drop Reordering: Rearrange tasks vertically within checklists and reorder checklist columns horizontally using intuitive drag handles.
+- ✅ Drag-and-Drop Reordering: Rearrange tasks vertically and checklists horizontally with collision-resistant order calculation.
 - ✅ Custom Native Dialogs: Replaced browser confirm with a themed, glassmorphic ConfirmationDialog.
 - ✅ Collapsible Sidebar: Sidebar can now be toggled to a minimized icon-only state with centered icons and tooltips.
 - ✅ Dark Mode: Integrated dark mode with manual toggle and system preference support.
 - ✅ Strategic Sidebar Organization: "The Board" and "Inbox" are top-level items, followed by Active Projects and "Checkmated" (completed) sections.
-- ✅ UI Consistency: Standardized column widths between "Active Checklists" and "Mission Accomplished" sections for a more professional and balanced layout.
+- ✅ UI Consistency: Standardized column widths, improved tree-line alignment, and fixed drag-handle visibility for a surgical layout.
 - ✅ UI Refinements: Improved Smart Quick-Add flow, centered icons in collapsed sidebar, and filtered Board view (no drag handles, root tasks only).
 - ✅ Project Templates: Ability to duplicate an entire project, with an option to include or exclude existing tasks.
 - ✅ Task & Project Cleanup: Recursive task deletion, checklist removal, and "Clear All Done" functionality with themed confirmation dialogs.
