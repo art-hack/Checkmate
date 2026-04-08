@@ -168,6 +168,7 @@ const Dashboard: FC<DashboardProps> = ({
         </div>
 
         <nav className={`flex-grow p-4 space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden ${isSidebarCollapsed ? 'p-2' : 'p-4'}`}>
+          {/* Command Center: Board & Inbox */}
           <div className="space-y-1">
             <button 
               onClick={() => onSelectProject(null)}
@@ -177,9 +178,20 @@ const Dashboard: FC<DashboardProps> = ({
               <LayoutDashboard className="w-5 h-5 flex-shrink-0" />
               {!isSidebarCollapsed && <span className="text-sm font-medium">The Board</span>}
             </button>
-            {inboxProject && renderProjectButton(inboxProject)}
+
+            {inboxProject && (
+              <button 
+                onClick={() => onSelectProject(inboxProject.id)}
+                title={isSidebarCollapsed ? 'Inbox' : ''}
+                className={`w-full flex items-center rounded-lg transition-colors ${isSidebarCollapsed ? 'justify-center px-0 py-2' : 'space-x-3 px-4 py-2'} ${activeProjectId === inboxProject.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+              >
+                <InboxIcon className="w-5 h-5 flex-shrink-0" />
+                {!isSidebarCollapsed && <span className="text-sm font-medium">Inbox</span>}
+              </button>
+            )}
           </div>
 
+          {/* Active Projects */}
           <div className="space-y-4">
             <div className={`px-4 flex items-center justify-between ${isSidebarCollapsed ? 'px-0 justify-center' : ''}`}>
               {!isSidebarCollapsed && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>}
