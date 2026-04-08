@@ -16,6 +16,7 @@ interface DashboardProps {
   onAddTask: (text: string, projectId: string, checklistId: string) => void;
   onToggleTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onDeleteTask: (taskId: string) => void;
   onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddProject: (name: string) => void;
   onDeleteProject: (id: string) => void;
@@ -36,6 +37,7 @@ const Dashboard: FC<DashboardProps> = ({
   onAddTask,
   onToggleTask,
   onEditTask,
+  onDeleteTask,
   onMoveTask,
   onAddProject,
   onDeleteProject,
@@ -159,7 +161,7 @@ const Dashboard: FC<DashboardProps> = ({
           </h2>
         </div>
 
-        <nav className={`flex-grow space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden ${isSidebarCollapsed ? 'p-2' : 'p-4'}`}>
+        <nav className={`flex-grow p-4 space-y-6 overflow-y-auto custom-scrollbar overflow-x-hidden ${isSidebarCollapsed ? 'p-2' : 'p-4'}`}>
           <div className="space-y-1">
             <button 
               onClick={() => onSelectProject(null)}
@@ -289,6 +291,7 @@ const Dashboard: FC<DashboardProps> = ({
                           onToggle={onToggleTask}
                           onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
                           onEdit={onEditTask}
+                          onDelete={onDeleteTask}
                           onMove={onMoveTask}
                           hideGrip={true}
                         />

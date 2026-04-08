@@ -54,6 +54,10 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ UI Consistency: Standardized column widths between "Active Checklists" and "Mission Accomplished" sections for a more professional and balanced layout.
 - ✅ UI Refinements: Improved Smart Quick-Add flow, centered icons in collapsed sidebar, and filtered Board view (no drag handles, root tasks only).
 - ✅ Project Templates: Ability to duplicate an entire project, with an option to include or exclude existing tasks.
+- ✅ Task & Project Cleanup:
+  - Recursive Task Deletion: Remove tasks and all nested subtasks with a safety confirmation dialog.
+  - Checklist Column Deletion: Remove entire checklists and their associated tasks.
+  - Clear All Done: Purge all completed tasks from a project instantly via the "Mission Accomplished" section.
 
 ## 🛠️ Next Steps / Roadmap
 

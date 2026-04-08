@@ -1,5 +1,5 @@
 import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
-import { Plus, Edit2, CheckCircle2 } from 'lucide-react';
+import { Plus, Edit2, CheckCircle2, Trash2, Eraser } from 'lucide-react';
 import { 
   DndContext, 
   closestCenter,
@@ -18,6 +18,7 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import ProgressBar from './ProgressBar';
 import TaskItem from './TaskItem';
+import ConfirmationDialog from './ConfirmationDialog';
 import type { Project, Checklist, Task } from './types';
 
 interface ProjectViewProps {
@@ -29,11 +30,14 @@ interface ProjectViewProps {
   onToggleTask: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onDeleteTask: (taskId: string) => void;
   onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddChecklist: (name: string) => void;
   onEditChecklist: (checklistId: string, newName: string) => void;
+  onDeleteChecklist: (checklistId: string) => void;
   onAddTask: (text: string, projectId: string, checklistId: string) => void;
   onReorderTasks: (projectId: string, checklistId: string, parentId: string | null, newTasks: Task[]) => void;
+  onClearDoneTasks: (projectId: string) => void;
 }
 
 const ProjectView: FC<ProjectViewProps> = ({ 
@@ -45,11 +49,14 @@ const ProjectView: FC<ProjectViewProps> = ({
   onToggleTask, 
   onAddSubtask,
   onEditTask,
+  onDeleteTask,
   onMoveTask,
   onAddChecklist,
   onEditChecklist,
+  onDeleteChecklist,
   onAddTask,
-  onReorderTasks
+  onReorderTasks,
+  onClearDoneTasks
 }) => {
   const [globalDone, setGlobalDone] = useState(false);
   const [newChecklistName, setNewChecklistName] = useState('');
@@ -57,6 +64,9 @@ const ProjectView: FC<ProjectViewProps> = ({
   const [editChecklistName, setEditChecklistName] = useState('');
   const [inlineTaskText, setInlineTaskText] = useState<{ [key: string]: string }>({});
   
+  const [checklistToDelete, setChecklistToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [showClearDoneConfirm, setShowClearDoneConfirm] = useState(false);
+
   const editChecklistInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
@@ -132,6 +142,7 @@ const ProjectView: FC<ProjectViewProps> = ({
           onToggle={onToggleTask}
           onAddSubtask={onAddSubtask}
           onEdit={onEditTask}
+          onDelete={onDeleteTask}
           onMove={onMoveTask}
         />
       ));
@@ -158,6 +169,7 @@ const ProjectView: FC<ProjectViewProps> = ({
               onToggle={onToggleTask}
               onAddSubtask={onAddSubtask}
               onEdit={onEditTask}
+              onDelete={onDeleteTask}
               onMove={onMoveTask}
             />
           ))}
@@ -165,6 +177,8 @@ const ProjectView: FC<ProjectViewProps> = ({
       </DndContext>
     );
   };
+
+  const completedTasksCount = tasks.filter(t => t.completed && !t.parentId).length;
 
   return (
     <div className="h-full flex flex-col space-y-6">
@@ -222,21 +236,29 @@ const ProjectView: FC<ProjectViewProps> = ({
                     </form>
                   ) : (
                     <>
-                      <h2 className="text-lg font-bold truncate cursor-pointer text-slate-800 dark:text-slate-100" onDoubleClick={() => {
+                      <h2 className="text-lg font-bold truncate cursor-pointer text-slate-800 dark:text-slate-100 flex-grow" onDoubleClick={() => {
                         setEditingChecklistId(checklist.id);
                         setEditChecklistName(checklist.name);
                       }}>
                         {checklist.name}
                       </h2>
-                      <button 
-                        onClick={() => {
-                          setEditingChecklistId(checklist.id);
-                          setEditChecklistName(checklist.name);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-action-indigo transition-all"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button 
+                          onClick={() => {
+                            setEditingChecklistId(checklist.id);
+                            setEditChecklistName(checklist.name);
+                          }}
+                          className="text-slate-400 hover:text-action-indigo p-1"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => setChecklistToDelete({ id: checklist.id, name: checklist.name })}
+                          className="text-slate-400 hover:text-red-500 p-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </>
                   )}
                 </div>
@@ -265,12 +287,24 @@ const ProjectView: FC<ProjectViewProps> = ({
         {/* Done Section (Horizontal Separation) */}
         {globalDone && (
           <section className="pt-8 border-t-2 border-slate-100 dark:border-slate-800/50">
-            <div className="flex items-center space-x-2 mb-6">
-              <CheckCircle2 className="w-5 h-5 text-victory-green" />
-              <h3 className="text-lg font-bold text-victory-green">Mission Accomplished</h3>
-              <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-victory-green px-2 py-0.5 rounded-full font-bold">
-                {tasks.filter(t => t.completed && !t.parentId).length} items
-              </span>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="w-5 h-5 text-victory-green" />
+                <h3 className="text-lg font-bold text-victory-green">Mission Accomplished</h3>
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-victory-green px-2 py-0.5 rounded-full font-bold">
+                  {completedTasksCount} items
+                </span>
+              </div>
+              
+              {completedTasksCount > 0 && (
+                <button 
+                  onClick={() => setShowClearDoneConfirm(true)}
+                  className="flex items-center space-x-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                  <span>Clear All Done</span>
+                </button>
+              )}
             </div>
             
             <div className="flex space-x-6 pb-8 overflow-x-auto custom-scrollbar">
@@ -294,6 +328,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                           onToggle={onToggleTask}
                           onAddSubtask={onAddSubtask}
                           onEdit={onEditTask}
+                          onDelete={onDeleteTask}
                           onMove={onMoveTask}
                         />
                       ))}
@@ -324,6 +359,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                           onToggle={onToggleTask}
                           onAddSubtask={onAddSubtask}
                           onEdit={onEditTask}
+                          onDelete={onDeleteTask}
                           onMove={onMoveTask}
                         />
                       ))}
@@ -336,6 +372,27 @@ const ProjectView: FC<ProjectViewProps> = ({
           </section>
         )}
       </div>
+
+      {/* Confirmation Dialogs */}
+      <ConfirmationDialog 
+        isOpen={!!checklistToDelete}
+        title="Delete Checklist"
+        message={`Are you sure you want to delete "${checklistToDelete?.name}"? All tasks within this column will be permanently removed.`}
+        confirmLabel="Delete Checklist"
+        onConfirm={() => checklistToDelete && onDeleteChecklist(checklistToDelete.id)}
+        onCancel={() => setChecklistToDelete(null)}
+        isDanger={true}
+      />
+
+      <ConfirmationDialog 
+        isOpen={showClearDoneConfirm}
+        title="Clear Completed Tasks"
+        message="Are you sure you want to permanently remove all completed tasks from this project? This action cannot be undone."
+        confirmLabel="Clear All Done"
+        onConfirm={() => onClearDoneTasks(project.id)}
+        onCancel={() => setShowClearDoneConfirm(false)}
+        isDanger={true}
+      />
     </div>
   );
 };

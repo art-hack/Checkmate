@@ -130,6 +130,16 @@ function App() {
     setTasks(updatedTasks);
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    const findDescendantIds = (parentId: string): string[] => {
+      const children = tasks.filter(t => t.parentId === parentId);
+      return children.reduce((acc, child) => [...acc, child.id, ...findDescendantIds(child.id)], [] as string[]);
+    };
+
+    const idsToDelete = [taskId, ...findDescendantIds(taskId)];
+    setTasks(tasks.filter(t => !idsToDelete.includes(t.id)));
+  };
+
   const handleAddSubtask = (parentId: string, text: string) => {
     const parentTask = tasks.find(t => t.id === parentId);
     if (!parentTask) return;
@@ -230,6 +240,15 @@ function App() {
     setActiveProjectId(newProjectId);
   };
 
+  const handleDeleteChecklist = (checklistId: string) => {
+    setChecklists(checklists.filter(c => c.id !== checklistId));
+    setTasks(tasks.filter(t => t.checklistId !== checklistId));
+  };
+
+  const handleClearDoneTasks = (projectId: string) => {
+    setTasks(tasks.filter(t => !(t.projectId === projectId && t.completed)));
+  };
+
   if (loading) {
     return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-action-indigo">Loading...</div>;
   }
@@ -268,6 +287,7 @@ function App() {
         onAddTask={handleAddTask}
         onToggleTask={handleToggleTask}
         onEditTask={handleEditTask}
+        onDeleteTask={handleDeleteTask}
         onMoveTask={handleMoveTask}
         onAddProject={handleAddProject}
         onDeleteProject={handleDeleteProject}
@@ -286,9 +306,12 @@ function App() {
             onToggleTask={handleToggleTask}
             onAddSubtask={handleAddSubtask}
             onEditTask={handleEditTask}
+            onDeleteTask={handleDeleteTask}
             onMoveTask={handleMoveTask}
             onAddTask={handleAddTask}
             onReorderTasks={handleReorderTasks}
+            onDeleteChecklist={handleDeleteChecklist}
+            onClearDoneTasks={handleClearDoneTasks}
             onAddChecklist={(name) => {
               const newChecklist: Checklist = {
                 id: Math.random().toString(36).substr(2, 9),

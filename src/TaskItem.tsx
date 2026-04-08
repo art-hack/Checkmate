@@ -1,9 +1,10 @@
 import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2, Move, ListTodo, Hash, X, GripVertical } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2, Move, ListTodo, Hash, X, GripVertical, Trash2 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import ConfirmationDialog from './ConfirmationDialog';
 import type { Task, Project, Checklist } from './types';
 
 interface TaskItemProps {
@@ -14,6 +15,7 @@ interface TaskItemProps {
   onToggle: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
   onEdit: (taskId: string, newText: string) => void;
+  onDelete: (taskId: string) => void;
   onMove?: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   hideGrip?: boolean;
 }
@@ -26,6 +28,7 @@ const TaskItem: FC<TaskItemProps> = ({
   onToggle, 
   onAddSubtask, 
   onEdit,
+  onDelete,
   onMove,
   hideGrip = false
 }) => {
@@ -38,6 +41,7 @@ const TaskItem: FC<TaskItemProps> = ({
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [selectedMoveProject, setSelectedMoveProject] = useState<Project | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const editInputRef = useRef<HTMLInputElement>(null);
   const moveButtonRef = useRef<HTMLButtonElement>(null);
@@ -100,6 +104,14 @@ const TaskItem: FC<TaskItemProps> = ({
       onMove(task.id, selectedMoveProject.id, checklistId);
       setShowMoveMenu(false);
       setSelectedMoveProject(null);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    if (subtasks.length > 0) {
+      setShowDeleteConfirm(true);
+    } else {
+      onDelete(task.id);
     }
   };
 
@@ -178,6 +190,13 @@ const TaskItem: FC<TaskItemProps> = ({
             title="Add subtask"
           >
             <Plus className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={handleDeleteClick}
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
+            title="Delete task"
+          >
+            <Trash2 className="w-4 h-4" />
           </button>
           {subtasks.length > 0 && (
             <button 
@@ -291,6 +310,7 @@ const TaskItem: FC<TaskItemProps> = ({
                 onToggle={onToggle}
                 onAddSubtask={onAddSubtask}
                 onEdit={onEdit}
+                onDelete={onDelete}
                 onMove={onMove}
                 hideGrip={hideGrip}
               />
@@ -298,6 +318,16 @@ const TaskItem: FC<TaskItemProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmationDialog 
+        isOpen={showDeleteConfirm}
+        title="Delete Task & Subtasks"
+        message={`This task has ${subtasks.length} subtasks. Are you sure you want to delete the entire tree? This action cannot be undone.`}
+        confirmLabel="Delete Everything"
+        onConfirm={() => onDelete(task.id)}
+        onCancel={() => setShowDeleteConfirm(false)}
+        isDanger={true}
+      />
     </div>
   );
 };
