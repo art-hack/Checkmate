@@ -273,13 +273,13 @@ const ProjectView: FC<ProjectViewProps> = ({
               </span>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
+            <div className="flex space-x-6 pb-8 overflow-x-auto custom-scrollbar">
               {checklists.map(checklist => {
                 const completedTasks = tasks.filter(t => t.checklistId === checklist.id && t.completed && !t.parentId);
                 if (completedTasks.length === 0) return null;
 
                 return (
-                  <div key={`done-${checklist.id}`} className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
+                  <div key={`done-${checklist.id}`} className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: {checklist.name}</span>
                     </h4>
@@ -309,7 +309,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                 if (orphanedTasks.length === 0) return null;
 
                 return (
-                  <div key="done-orphaned" className="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
+                  <div key="done-orphaned" className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: Uncategorized</span>
                     </h4>
