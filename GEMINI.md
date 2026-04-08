@@ -45,7 +45,7 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Sidebar project management (Create/Switch/Delete/Duplicate).
 - ✅ Collapsible Sidebar: Toggleable minimized state with centered icons and tooltips.
 - ✅ Task & Checklist management: Recursive editing, reordering, and themed deletion logic.
-- ✅ UI Refinements: Dark mode (system/manual), glassmorphism, and corrected tree alignment.
+- ✅ UI Refinements: Dark mode (system/manual), glassmorphism, corrected tree alignment, and unified branding (favicon matches sidebar logo).
 - ✅ Performance & SEO: Manual chunking, sourcemaps, meta tags, and robots.txt.
 - ✅ Accessibility: Comprehensive `aria-label` coverage and keyboard focus states.
 
