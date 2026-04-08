@@ -4,13 +4,15 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-action-indigo: #6366f1;
-  --color-victory-green: #10b981;
+  --color-action-indigo: var(--action-indigo);
+  --color-victory-green: var(--victory-green);
   --color-strategy-black: #0f172a;
   --color-check-white: #f8fafc;
 }
 
 :root {
+  --action-indigo: #4f46e5; /* Indigo 600 - Better contrast on white */
+  --victory-green: #059669; /* Emerald 600 - Better contrast on white */
   --bg-color: #f8fafc;
   --text-color: #1e293b;
   --card-bg: rgba(255, 255, 255, 0.8);
@@ -19,6 +21,8 @@
 }
 
 .dark {
+  --action-indigo: #6366f1; /* Indigo 500 - Good contrast on dark */
+  --victory-green: #10b981; /* Emerald 500 - Good contrast on dark */
   --bg-color: #020617;
   --text-color: #f8fafc;
   --card-bg: rgba(15, 23, 42, 0.8);

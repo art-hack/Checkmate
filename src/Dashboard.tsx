@@ -123,15 +123,17 @@ const Dashboard: FC<DashboardProps> = ({
           <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={(e) => handleDuplicateClick(e, project.id, project.name)}
-              className={`p-1 rounded hover:bg-white/20 transition-colors ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
+              className={`p-1 rounded hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
               title="Duplicate project"
+              aria-label={`Duplicate project ${project.name}`}
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={(e) => handleDeleteClick(e, project.id, project.name)}
-              className={`p-1 rounded hover:bg-white/20 transition-colors hover:text-red-500 ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
+              className={`p-1 rounded hover:bg-white/20 transition-colors hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
               title="Delete project"
+              aria-label={`Delete project ${project.name}`}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -155,7 +157,8 @@ const Dashboard: FC<DashboardProps> = ({
       <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 relative`}>
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="absolute -right-3 top-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full p-1 shadow-md z-10 hover:text-action-indigo transition-colors"
+          className="absolute -right-3 top-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full p-1 shadow-md z-10 hover:text-action-indigo transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -195,13 +198,14 @@ const Dashboard: FC<DashboardProps> = ({
           <div className="space-y-4">
             <div className={`px-4 flex items-center justify-between ${isSidebarCollapsed ? 'px-0 justify-center' : ''}`}>
               {!isSidebarCollapsed && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Projects</h3>}
-              <button 
+            <button 
                 onClick={() => {
                   if (isSidebarCollapsed) setIsSidebarCollapsed(false);
                   setIsAddingProject(!isAddingProject);
                 }}
-                className="text-slate-400 hover:text-action-indigo transition-colors"
+                className="text-slate-400 hover:text-action-indigo transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo rounded"
                 title="Add Project"
+                aria-label="Add new project"
               >
                 <Plus className="w-4 h-4" />
               </button>

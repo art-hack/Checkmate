@@ -115,13 +115,15 @@ const SortableChecklist: FC<SortableChecklistProps> = ({
                     setEditingChecklistId(checklist.id);
                     setEditChecklistName(checklist.name);
                   }}
-                  className="text-slate-400 hover:text-action-indigo p-1"
+                  className="text-slate-400 hover:text-action-indigo p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo rounded"
+                  aria-label="Edit checklist name"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => onDeleteChecklist(checklist.id, checklist.name)}
-                  className="text-slate-400 hover:text-red-500 p-1"
+                  className="text-slate-400 hover:text-red-500 p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
+                  aria-label="Delete checklist"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -337,7 +339,8 @@ const ProjectView: FC<ProjectViewProps> = ({
         <div className="flex items-center space-x-4">
           <button 
             onClick={() => setGlobalDone(!globalDone)}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center space-x-2 ${globalDone ? 'bg-victory-green text-white shadow-lg shadow-emerald-200' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center space-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo ${globalDone ? 'bg-victory-green text-white shadow-lg shadow-emerald-200' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'}`}
+            aria-label={globalDone ? "Hide completed tasks" : "Show completed tasks"}
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{globalDone ? 'Hide Done' : 'Show Done'}</span>
@@ -352,7 +355,11 @@ const ProjectView: FC<ProjectViewProps> = ({
             placeholder="New checklist..."
             className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 bg-white dark:bg-slate-900 text-sm outline-none focus:border-action-indigo transition-colors"
           />
-          <button type="submit" className="p-1 bg-action-indigo text-white rounded-md hover:bg-indigo-700 transition-colors">
+          <button 
+            type="submit" 
+            className="p-1 bg-action-indigo text-white rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-action-indigo"
+            aria-label="Add new checklist"
+          >
             <Plus className="w-4 h-4" />
           </button>
         </form>
@@ -418,7 +425,8 @@ const ProjectView: FC<ProjectViewProps> = ({
               {completedTasksCount > 0 && (
                 <button 
                   onClick={() => setShowClearDoneConfirm(true)}
-                  className="flex items-center space-x-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg"
+                  className="flex items-center space-x-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  aria-label="Clear all completed tasks"
                 >
                   <Eraser className="w-3.5 h-3.5" />
                   <span>Clear All Done</span>

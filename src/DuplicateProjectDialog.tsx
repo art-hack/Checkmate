@@ -58,7 +58,8 @@ const DuplicateProjectDialog: FC<DuplicateProjectDialogProps> = ({
               </div>
               <button 
                 onClick={onCancel}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 rounded"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>

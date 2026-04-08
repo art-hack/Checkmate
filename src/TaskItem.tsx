@@ -137,7 +137,8 @@ const TaskItem: FC<TaskItemProps> = ({
 
         <button 
           onClick={handleToggle}
-          className="mr-3 focus:outline-none flex-shrink-0"
+          className="mr-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo rounded-full flex-shrink-0"
+          aria-label={task.completed ? "Mark task as incomplete" : "Mark task as complete"}
         >
           {task.completed ? (
             <CheckCircle2 className="w-5 h-5 text-victory-green" />
@@ -154,7 +155,7 @@ const TaskItem: FC<TaskItemProps> = ({
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               onBlur={() => handleEditSubmit()}
-              className="w-full bg-transparent border-b border-action-indigo outline-none px-1 py-0.5 text-sm text-slate-900 dark:text-slate-100"
+              className="w-full bg-transparent border-b border-action-indigo outline-none px-1 py-0.5 text-sm text-slate-900 dark:text-slate-100 focus:ring-0"
             />
           </form>
         ) : (
@@ -171,37 +172,42 @@ const TaskItem: FC<TaskItemProps> = ({
             <button 
               ref={moveButtonRef}
               onClick={handleMoveClick}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
               title="Move to project"
+              aria-label="Move task to project"
             >
               <Move className="w-4 h-4" />
             </button>
           )}
           <button 
             onClick={() => setIsEditing(true)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
             title="Edit task"
+            aria-label="Edit task"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setShowAddSubtask(!showAddSubtask)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
             title="Add subtask"
+            aria-label="Add subtask"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button 
             onClick={handleDeleteClick}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             title="Delete task"
+            aria-label="Delete task"
           >
             <Trash2 className="w-4 h-4" />
           </button>
           {subtasks.length > 0 && (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
+              aria-label={isExpanded ? "Collapse subtasks" : "Expand subtasks"}
             >
               {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
@@ -225,7 +231,11 @@ const TaskItem: FC<TaskItemProps> = ({
                   <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
                     {selectedMoveProject ? 'Select Section' : 'Move Task'}
                   </span>
-                  <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors">
+                  <button 
+                    onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} 
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
+                    aria-label="Close move menu"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </div>

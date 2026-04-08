@@ -160,7 +160,8 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
         <button 
           type="submit"
           disabled={!!routingTask}
-          className="p-2 bg-action-indigo text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-md shadow-indigo-200 dark:shadow-none"
+          className="p-2 bg-action-indigo text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-md shadow-indigo-200 dark:shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-action-indigo"
+          aria-label="Send task"
         >
           <Send className="w-5 h-5" />
         </button>
@@ -194,7 +195,8 @@ const SmartQuickAdd: React.FC<SmartQuickAddProps> = ({ projects, checklists, onA
             </span>
             <button 
               onClick={() => setRoutingTask(null)}
-              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors text-slate-500"
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
+              aria-label="Back to task input"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>

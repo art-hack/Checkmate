@@ -5,6 +5,18 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('firebase')) return 'vendor-firebase';
+          if (id.includes('react')) return 'vendor-react';
+          if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('@dnd-kit')) return 'vendor-utils';
+        }
+      }
+    }
+  },
   plugins: [
     react(),
     tailwindcss(),
