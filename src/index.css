@@ -11,21 +11,21 @@
 }
 
 :root {
-  --action-indigo: #4f46e5; /* Indigo 600 - Better contrast on white */
-  --victory-green: #059669; /* Emerald 600 - Better contrast on white */
+  --action-indigo: #4f46e5;
+  --victory-green: #059669;
   --bg-color: #f8fafc;
   --text-color: #1e293b;
-  --card-bg: rgba(255, 255, 255, 0.8);
+  --card-bg: rgba(255, 255, 255, 0.9); /* Increased opacity for readability */
   --border-color: rgba(226, 232, 240, 0.8);
   --sidebar-bg: #ffffff;
 }
 
 .dark {
-  --action-indigo: #6366f1; /* Indigo 500 - Good contrast on dark */
-  --victory-green: #10b981; /* Emerald 500 - Good contrast on dark */
+  --action-indigo: #818cf8; /* Lighter indigo for better dark contrast */
+  --victory-green: #34d399; /* Lighter emerald for better dark contrast */
   --bg-color: #020617;
-  --text-color: #f8fafc;
-  --card-bg: rgba(15, 23, 42, 0.8);
+  --text-color: #f1f5f9; /* Slate 100 for better contrast */
+  --card-bg: rgba(15, 23, 42, 0.9); /* Increased opacity for readability */
   --border-color: rgba(30, 41, 59, 0.8);
   --sidebar-bg: #0f172a;
 }
@@ -45,6 +45,7 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .task-completed {

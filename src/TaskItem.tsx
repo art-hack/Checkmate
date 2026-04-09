@@ -15,7 +15,8 @@ import {
   GripVertical, 
   Trash2,
   Calendar,
-  Flag
+  Flag,
+  MoreHorizontal
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -55,13 +56,14 @@ const TaskItem: FC<TaskItemProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(task.text);
   
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [selectedMoveProject, setSelectedMoveProject] = useState<Project | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const editInputRef = useRef<HTMLInputElement>(null);
-  const moveButtonRef = useRef<HTMLButtonElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
 
   const {
     attributes,
@@ -108,12 +110,17 @@ const TaskItem: FC<TaskItemProps> = ({
     setIsEditing(false);
   };
 
-  const handleMoveClick = () => {
-    if (moveButtonRef.current) {
-      const rect = moveButtonRef.current.getBoundingClientRect();
-      setMenuPosition({ top: rect.bottom + window.scrollY, left: rect.right - 256 + window.scrollX });
+  const toggleMoreMenu = () => {
+    if (moreButtonRef.current) {
+      const rect = moreButtonRef.current.getBoundingClientRect();
+      setMenuPosition({ top: rect.bottom + window.scrollY, left: rect.right - 180 + window.scrollX });
     }
-    setShowMoveMenu(!showMoveMenu);
+    setShowMoreMenu(!showMoreMenu);
+  };
+
+  const handleMoveMenuToggle = () => {
+    setShowMoreMenu(false);
+    setShowMoveMenu(true);
   };
 
   const handleMoveSelect = (checklistId: string) => {
@@ -125,6 +132,7 @@ const TaskItem: FC<TaskItemProps> = ({
   };
 
   const handleDeleteClick = () => {
+    setShowMoreMenu(false);
     if (subtasks.length > 0) {
       setShowDeleteConfirm(true);
     } else {
@@ -142,6 +150,7 @@ const TaskItem: FC<TaskItemProps> = ({
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value ? new Date(e.target.value) : null;
     onUpdate(task.id, { dueDate: date });
+    setShowMoreMenu(false);
   };
 
   const isRootTask = !task.parentId;
@@ -150,7 +159,7 @@ const TaskItem: FC<TaskItemProps> = ({
   const priorityColors = {
     high: 'text-red-500 fill-red-500',
     medium: 'text-amber-500 fill-amber-500',
-    low: 'text-slate-400 fill-transparent'
+    low: 'text-emerald-500 fill-emerald-500'
   };
 
   return (
@@ -205,9 +214,9 @@ const TaskItem: FC<TaskItemProps> = ({
               </span>
             )}
 
-            {/* Priority and Due Date Indicators (Always visible if set) */}
+            {/* Status Indicators */}
             <div className="flex items-center space-x-2 flex-shrink-0">
-              {task.priority && task.priority !== 'low' && (
+              {task.priority && (
                 <Flag className={`w-3 h-3 ${priorityColors[task.priority]}`} />
               )}
               {task.dueDate && (
@@ -220,43 +229,13 @@ const TaskItem: FC<TaskItemProps> = ({
           </div>
         </div>
 
-        <div className="hidden group-hover:flex items-center space-x-1 ml-2 flex-shrink-0">
-          {/* Priority Cycle */}
-          <button 
-            onClick={cyclePriority}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
-            title="Cycle Priority"
-          >
-            <Flag className={`w-4 h-4 ${task.priority ? priorityColors[task.priority] : ''}`} />
-          </button>
-
-          {/* Date Picker Overlay Toggle */}
-          <div className="relative">
-            <input 
-              type="date"
-              onChange={handleDateChange}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full"
-              title="Set Due Date"
-            />
-            <button className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors">
-              <Calendar className="w-4 h-4" />
-            </button>
-          </div>
-
-          {isRootTask && onMove && projects && checklists && (
-            <button 
-              ref={moveButtonRef}
-              onClick={handleMoveClick}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
-              title="Move to project"
-            >
-              <Move className="w-4 h-4" />
-            </button>
-          )}
+        {/* Stable Action Bar - Fixed width to prevent jumping */}
+        <div className="flex items-center space-x-1 ml-2 flex-shrink-0 min-w-[100px] justify-end opacity-0 group-hover:opacity-100 transition-opacity">
           <button 
             onClick={() => setIsEditing(true)}
             className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Edit task"
+            aria-label="Edit task"
           >
             <Edit2 className="w-4 h-4" />
           </button>
@@ -264,25 +243,95 @@ const TaskItem: FC<TaskItemProps> = ({
             onClick={() => setShowAddSubtask(!showAddSubtask)}
             className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Add subtask"
+            aria-label="Add subtask"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button 
-            onClick={handleDeleteClick}
+            onClick={() => onDelete(task.id)}
             className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
             title="Delete task"
+            aria-label="Delete task"
           >
             <Trash2 className="w-4 h-4" />
           </button>
-          {subtasks.length > 0 && (
-            <button 
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
-            >
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            </button>
-          )}
+          
+          {/* More Menu Toggle */}
+          <button 
+            ref={moreButtonRef}
+            onClick={toggleMoreMenu}
+            className={`p-1 rounded transition-colors ${showMoreMenu ? 'bg-slate-100 dark:bg-slate-800 text-action-indigo' : 'text-slate-400 dark:text-slate-500 hover:text-action-indigo'}`}
+            title="More actions"
+            aria-label="More actions"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+
+          <div className="w-6 flex items-center justify-center">
+            {subtasks.length > 0 && (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+              >
+                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* More Menu Dropdown (Portaled) */}
+        {showMoreMenu && createPortal(
+          <div 
+            className="fixed z-[300]"
+            style={{ top: menuPosition.top, left: menuPosition.left }}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden py-1"
+            >
+              <button 
+                onClick={cyclePriority}
+                className="w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <Flag className={`w-4 h-4 ${task.priority ? priorityColors[task.priority] : 'text-slate-400'}`} />
+                <span>Priority: <span className="capitalize">{task.priority || 'Low'}</span></span>
+              </button>
+
+              <div className="relative w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                <Calendar className="w-4 h-4 text-slate-400" />
+                <span>Set Due Date</span>
+                <input 
+                  type="date"
+                  onChange={handleDateChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+              </div>
+
+              {isRootTask && onMove && (
+                <button 
+                  onClick={handleMoveMenuToggle}
+                  className="w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <Move className="w-4 h-4 text-slate-400" />
+                  <span>Move to Project</span>
+                </button>
+              )}
+              
+              <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
+              
+              <button 
+                onClick={handleDeleteClick}
+                className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Task</span>
+              </button>
+            </motion.div>
+            <div className="fixed inset-0 -z-10" onClick={() => setShowMoreMenu(false)} />
+          </div>,
+          document.body
+        )}
 
         {/* Move Menu Dropdown (Portaled) */}
         {showMoveMenu && projects && checklists && createPortal(
