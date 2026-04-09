@@ -20,6 +20,7 @@ function App() {
     handleAddTask,
     handleToggleTask,
     handleEditTask,
+    handleUpdateTask,
     handleDeleteTask,
     handleMoveTask,
     handleReorderTasks,
@@ -137,6 +138,7 @@ function App() {
         onAddTask={handleAddTask}
         onToggleTask={handleToggleTask}
         onEditTask={handleEditTask}
+        onUpdateTask={handleUpdateTask}
         onDeleteTask={handleDeleteTask}
         onMoveTask={handleMoveTask}
         onAddProject={onAddProject}
@@ -156,6 +158,7 @@ function App() {
             onToggleTask={handleToggleTask}
             onAddSubtask={handleAddSubtask}
             onEditTask={handleEditTask}
+            onUpdateTask={handleUpdateTask}
             onDeleteTask={handleDeleteTask}
             onMoveTask={handleMoveTask}
             onAddTask={handleAddTask}

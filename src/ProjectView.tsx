@@ -36,6 +36,7 @@ interface SortableChecklistProps {
   inlineTaskText: { [key: string]: string };
   renderTasks: (checklistId: string, isDoneSection: boolean) => ReactNode;
   onEditChecklist: (id: string, name: string) => void;
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
   onDeleteChecklist: (id: string, name: string) => void;
   onAddInlineTask: (e: FormEvent, checklistId: string) => void;
   setInlineTaskText: (val: { [key: string]: string }) => void;
@@ -164,6 +165,7 @@ interface ProjectViewProps {
   onToggleTask: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
   onDeleteTask: (taskId: string) => void;
   onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddChecklist: (name: string) => void;
@@ -184,6 +186,7 @@ const ProjectView: FC<ProjectViewProps> = ({
   onToggleTask, 
   onAddSubtask,
   onEditTask,
+  onUpdateTask,
   onDeleteTask,
   onMoveTask,
   onAddChecklist,
@@ -290,6 +293,7 @@ const ProjectView: FC<ProjectViewProps> = ({
           onToggle={onToggleTask}
           onAddSubtask={onAddSubtask}
           onEdit={onEditTask}
+          onUpdate={onUpdateTask}
           onDelete={onDeleteTask}
           onMove={onMoveTask}
         />
@@ -317,6 +321,7 @@ const ProjectView: FC<ProjectViewProps> = ({
               onToggle={onToggleTask}
               onAddSubtask={onAddSubtask}
               onEdit={onEditTask}
+              onUpdate={onUpdateTask}
               onDelete={onDeleteTask}
               onMove={onMoveTask}
             />
@@ -396,6 +401,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                     inlineTaskText={inlineTaskText}
                     renderTasks={renderTasks}
                     onEditChecklist={onEditChecklist}
+                    onUpdateTask={onUpdateTask}
                     onDeleteChecklist={(id, name) => setChecklistToDelete({ id, name })}
                     onAddInlineTask={handleAddInlineTask}
                     setInlineTaskText={setInlineTaskText}
@@ -457,6 +463,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                           onToggle={onToggleTask}
                           onAddSubtask={onAddSubtask}
                           onEdit={onEditTask}
+                          onUpdate={onUpdateTask}
                           onDelete={onDeleteTask}
                           onMove={onMoveTask}
                         />
@@ -488,6 +495,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                           onToggle={onToggleTask}
                           onAddSubtask={onAddSubtask}
                           onEdit={onEditTask}
+                          onUpdate={onUpdateTask}
                           onDelete={onDeleteTask}
                           onMove={onMoveTask}
                         />

@@ -125,6 +125,10 @@ export const useCheckmateData = (user: User | null) => {
     });
   };
 
+  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    await updateDoc(doc(db, "tasks", taskId), updates);
+  };
+
   const handleMoveTask = async (taskId: string, newProjectId: string, newChecklistId: string) => {
     if (!user) return;
     const batch = writeBatch(db);
@@ -303,6 +307,7 @@ export const useCheckmateData = (user: User | null) => {
     handleAddTask,
     handleToggleTask,
     handleEditTask,
+    handleUpdateTask,
     handleMoveTask,
     handleReorderTasks,
     handleReorderChecklists,

@@ -16,6 +16,7 @@ interface DashboardProps {
   onAddTask: (text: string, projectId: string, checklistId: string) => void;
   onToggleTask: (taskId: string) => void;
   onEditTask: (taskId: string, newText: string) => void;
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
   onDeleteTask: (taskId: string) => void;
   onMoveTask: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   onAddProject: (name: string) => void;
@@ -37,6 +38,7 @@ const Dashboard: FC<DashboardProps> = ({
   onAddTask,
   onToggleTask,
   onEditTask,
+  onUpdateTask,
   onDeleteTask,
   onMoveTask,
   onAddProject,
@@ -52,10 +54,22 @@ const Dashboard: FC<DashboardProps> = ({
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
   const [projectToDuplicate, setProjectToDuplicate] = useState<{ id: string; name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [sortBy, setSortBy] = useState<'newest' | 'priority' | 'due'>('newest');
 
   const activeTasks = tasks
     .filter(t => !t.completed && !t.parentId)
     .sort((a, b) => {
+      if (sortBy === 'priority') {
+        const weight = { high: 3, medium: 2, low: 1 };
+        const valA = weight[a.priority || 'low'];
+        const valB = weight[b.priority || 'low'];
+        if (valA !== valB) return valB - valA;
+      }
+      if (sortBy === 'due') {
+        const timeA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const timeB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+      }
       const timeA = a.createdAt?.getTime?.() || 0;
       const timeB = b.createdAt?.getTime?.() || 0;
       return timeB - timeA;
@@ -292,10 +306,33 @@ const Dashboard: FC<DashboardProps> = ({
 
               <section className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between transition-colors">
-                  <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
-                    <ListTodo className="w-5 h-5 text-action-indigo" />
-                    <span>Up Next</span>
-                  </h2>
+                  <div className="flex items-center space-x-4">
+                    <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                      <ListTodo className="w-5 h-5 text-action-indigo" />
+                      <span>Up Next</span>
+                    </h2>
+                    
+                    <div className="flex items-center bg-white dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700 text-[10px] font-bold uppercase tracking-tighter">
+                      <button 
+                        onClick={() => setSortBy('newest')}
+                        className={`px-2 py-1 rounded-md transition-all ${sortBy === 'newest' ? 'bg-action-indigo text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Newest
+                      </button>
+                      <button 
+                        onClick={() => setSortBy('priority')}
+                        className={`px-2 py-1 rounded-md transition-all ${sortBy === 'priority' ? 'bg-action-indigo text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Priority
+                      </button>
+                      <button 
+                        onClick={() => setSortBy('due')}
+                        className={`px-2 py-1 rounded-md transition-all ${sortBy === 'due' ? 'bg-action-indigo text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        Due Date
+                      </button>
+                    </div>
+                  </div>
                   <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full font-bold text-slate-600 dark:text-slate-300 transition-colors">
                     {activeTasks.length} tasks
                   </span>
@@ -313,6 +350,7 @@ const Dashboard: FC<DashboardProps> = ({
                           onToggle={onToggleTask}
                           onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
                           onEdit={onEditTask}
+                          onUpdate={onUpdateTask}
                           onDelete={onDeleteTask}
                           onMove={onMoveTask}
                           hideGrip={true}

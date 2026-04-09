@@ -45,16 +45,16 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Sidebar project management (Create/Switch/Delete/Duplicate).
 - ✅ Collapsible Sidebar: Toggleable minimized state with centered icons and tooltips.
 - ✅ Task & Checklist management: Recursive editing, reordering, and themed deletion logic.
+- ✅ Task Enrichment: Support for Due Dates (with overdue warnings), Priority Levels (High/Medium/Low), and strategic sorting on The Board.
 - ✅ UI Refinements: Dark mode (system/manual), glassmorphism, corrected tree alignment, and unified branding (favicon matches sidebar logo).
 - ✅ Performance & SEO: Manual chunking, sourcemaps, meta tags, and robots.txt.
 - ✅ Accessibility: Comprehensive `aria-label` coverage and keyboard focus states.
 
 ## 🛠️ Next Steps / Roadmap
 
-1. **Task Enrichment:** Implement due dates, priority levels, and urgency-based sorting.
-2. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
-3. **Smart Notifications:** Browser push notifications for upcoming deadlines.
-4. **Global Search:** Command palette (`Ctrl+K`) for instant project/task jumping.
+1. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
+2. **Smart Notifications:** Browser push notifications for upcoming deadlines.
+3. **Global Search:** Command palette (`Ctrl+K`) for instant project/task jumping.
 
 ---
 *Last Updated: April 8, 2026*

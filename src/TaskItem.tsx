@@ -1,7 +1,22 @@
 import { useState, type FC, type FormEvent, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, ChevronDown, ChevronRight, Plus, Edit2, Move, ListTodo, Hash, X, GripVertical, Trash2 } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  Circle, 
+  ChevronDown, 
+  ChevronRight, 
+  Plus, 
+  Edit2, 
+  Move, 
+  ListTodo, 
+  Hash, 
+  X, 
+  GripVertical, 
+  Trash2,
+  Calendar,
+  Flag
+} from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -15,6 +30,7 @@ interface TaskItemProps {
   onToggle: (taskId: string) => void;
   onAddSubtask: (parentId: string, text: string) => void;
   onEdit: (taskId: string, newText: string) => void;
+  onUpdate: (taskId: string, updates: Partial<Task>) => void;
   onDelete: (taskId: string) => void;
   onMove?: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   hideGrip?: boolean;
@@ -28,6 +44,7 @@ const TaskItem: FC<TaskItemProps> = ({
   onToggle, 
   onAddSubtask, 
   onEdit,
+  onUpdate,
   onDelete,
   onMove,
   hideGrip = false
@@ -115,7 +132,26 @@ const TaskItem: FC<TaskItemProps> = ({
     }
   };
 
+  const cyclePriority = () => {
+    const priorities: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
+    const currentIdx = priorities.indexOf(task.priority || 'low');
+    const nextPriority = priorities[(currentIdx + 1) % priorities.length];
+    onUpdate(task.id, { priority: nextPriority });
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value ? new Date(e.target.value) : null;
+    onUpdate(task.id, { dueDate: date });
+  };
+
   const isRootTask = !task.parentId;
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+
+  const priorityColors = {
+    high: 'text-red-500 fill-red-500',
+    medium: 'text-amber-500 fill-amber-500',
+    low: 'text-slate-400 fill-transparent'
+  };
 
   return (
     <div 
@@ -124,7 +160,7 @@ const TaskItem: FC<TaskItemProps> = ({
       className={`relative ${task.parentId ? 'ml-8 border-l-2 border-slate-200 dark:border-slate-800 pl-4' : 'pl-8'} pr-4 py-1.5 min-w-0 ${isDragging ? 'z-50' : ''}`}
     >
       <div className="flex items-center group min-h-[32px] min-w-0">
-        {/* Drag Handle - Absolutely positioned to the left of the item content */}
+        {/* Drag Handle */}
         {!hideGrip && (
           <div 
             {...attributes} 
@@ -137,8 +173,8 @@ const TaskItem: FC<TaskItemProps> = ({
 
         <button 
           onClick={handleToggle}
-          className="mr-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo rounded-full flex-shrink-0"
-          aria-label={task.completed ? "Mark task as incomplete" : "Mark task as complete"}
+          className="mr-3 focus:outline-none flex-shrink-0"
+          aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
         >
           {task.completed ? (
             <CheckCircle2 className="w-5 h-5 text-victory-green" />
@@ -147,67 +183,101 @@ const TaskItem: FC<TaskItemProps> = ({
           )}
         </button>
 
-        {isEditing ? (
-          <form onSubmit={handleEditSubmit} className="flex-grow mr-2 min-w-0">
-            <input
-              ref={editInputRef}
-              type="text"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              onBlur={() => handleEditSubmit()}
-              className="w-full bg-transparent border-b border-action-indigo outline-none px-1 py-0.5 text-sm text-slate-900 dark:text-slate-100 focus:ring-0"
-            />
-          </form>
-        ) : (
-          <span 
-            onDoubleClick={() => setIsEditing(true)}
-            className={`flex-grow cursor-pointer whitespace-normal break-words min-w-0 py-0.5 text-sm text-slate-700 dark:text-slate-200 transition-colors ${task.completed ? 'task-completed' : ''}`}
-          >
-            {task.text}
-          </span>
-        )}
+        <div className="flex flex-col flex-grow min-w-0">
+          <div className="flex items-center space-x-2">
+            {isEditing ? (
+              <form onSubmit={handleEditSubmit} className="flex-grow min-w-0">
+                <input
+                  ref={editInputRef}
+                  type="text"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  onBlur={() => handleEditSubmit()}
+                  className="w-full bg-transparent border-b border-action-indigo outline-none px-1 py-0.5 text-sm text-slate-900 dark:text-slate-100"
+                />
+              </form>
+            ) : (
+              <span 
+                onDoubleClick={() => setIsEditing(true)}
+                className={`flex-grow cursor-pointer whitespace-normal break-words min-w-0 py-0.5 text-sm text-slate-700 dark:text-slate-200 transition-colors ${task.completed ? 'task-completed' : ''} ${isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : ''}`}
+              >
+                {task.text}
+              </span>
+            )}
 
-        <div className="hidden group-hover:flex items-center space-x-1 ml-2">
+            {/* Priority and Due Date Indicators (Always visible if set) */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {task.priority && task.priority !== 'low' && (
+                <Flag className={`w-3 h-3 ${priorityColors[task.priority]}`} />
+              )}
+              {task.dueDate && (
+                <div className={`flex items-center space-x-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${isOverdue ? 'bg-red-100 text-red-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                  <Calendar className="w-2.5 h-2.5" />
+                  <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden group-hover:flex items-center space-x-1 ml-2 flex-shrink-0">
+          {/* Priority Cycle */}
+          <button 
+            onClick={cyclePriority}
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+            title="Cycle Priority"
+          >
+            <Flag className={`w-4 h-4 ${task.priority ? priorityColors[task.priority] : ''}`} />
+          </button>
+
+          {/* Date Picker Overlay Toggle */}
+          <div className="relative">
+            <input 
+              type="date"
+              onChange={handleDateChange}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+              title="Set Due Date"
+            />
+            <button className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors">
+              <Calendar className="w-4 h-4" />
+            </button>
+          </div>
+
           {isRootTask && onMove && projects && checklists && (
             <button 
               ref={moveButtonRef}
               onClick={handleMoveClick}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
               title="Move to project"
-              aria-label="Move task to project"
             >
               <Move className="w-4 h-4" />
             </button>
           )}
           <button 
             onClick={() => setIsEditing(true)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Edit task"
-            aria-label="Edit task"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setShowAddSubtask(!showAddSubtask)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Add subtask"
-            aria-label="Add subtask"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button 
             onClick={handleDeleteClick}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
             title="Delete task"
-            aria-label="Delete task"
           >
             <Trash2 className="w-4 h-4" />
           </button>
           {subtasks.length > 0 && (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-action-indigo"
-              aria-label={isExpanded ? "Collapse subtasks" : "Expand subtasks"}
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             >
               {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
@@ -231,11 +301,7 @@ const TaskItem: FC<TaskItemProps> = ({
                   <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
                     {selectedMoveProject ? 'Select Section' : 'Move Task'}
                   </span>
-                  <button 
-                    onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} 
-                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
-                    aria-label="Close move menu"
-                  >
+                  <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors" aria-label="Close menu">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -320,6 +386,7 @@ const TaskItem: FC<TaskItemProps> = ({
                 onToggle={onToggle}
                 onAddSubtask={onAddSubtask}
                 onEdit={onEdit}
+                onUpdate={onUpdate}
                 onDelete={onDelete}
                 onMove={onMove}
                 hideGrip={hideGrip}
