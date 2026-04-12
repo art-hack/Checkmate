@@ -54,7 +54,8 @@ function App() {
     handleEditChecklist,
     handleClearDoneTasks,
     onAddChecklist,
-    handleInitializeSampleData
+    handleInitializeSampleData,
+    handleDeleteAccountData
   } = useCheckmateData(user);
 
   // Check for new user (no projects besides Inbox)
@@ -79,6 +80,21 @@ function App() {
   const closeOnboarding = () => {
     setShowOnboarding(false);
     if (user) localStorage.setItem(`onboarding_seen_${user.uid}`, 'true');
+  };
+
+  const onResetOnboarding = () => {
+    if (user) localStorage.removeItem(`onboarding_seen_${user.uid}`);
+    // If they only have Inbox, it will show immediately. 
+    // If not, it will show next time they clear data.
+    setShowOnboarding(true);
+  };
+
+  const onDeleteAccountData = async () => {
+    if (window.confirm("ARE YOU ABSOLUTELY SURE? This will wipe all your projects and tasks forever.")) {
+      await handleDeleteAccountData();
+      setActiveProjectId(null);
+      // After wiping, the useEffect for onboarding will trigger automatically
+    }
   };
 
   // Theme State
@@ -202,6 +218,8 @@ function App() {
         onAddProject={onAddProject}
         onDeleteProject={handleDeleteProject}
         onDuplicateProject={onDuplicateProject}
+        onDeleteAccountData={onDeleteAccountData}
+        onResetOnboarding={onResetOnboarding}
         onLogout={logout}
         theme={theme}
         onThemeToggle={setTheme}

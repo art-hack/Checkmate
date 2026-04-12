@@ -1,9 +1,10 @@
 import { useState, useEffect, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy, Moon, Sun, Monitor, Download } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy, Moon, Sun, Monitor, Download, Settings } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
 import DuplicateProjectDialog from './DuplicateProjectDialog';
+import SettingsDialog from './SettingsDialog';
 import type { Project, Task, User, Checklist } from './types';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -31,6 +32,8 @@ interface DashboardProps {
   onAddProject: (name: string) => void;
   onDeleteProject: (id: string) => void;
   onDuplicateProject: (projectId: string, newName: string, copyTasks: boolean) => void;
+  onDeleteAccountData: () => void;
+  onResetOnboarding: () => void;
   onLogout: () => void;
   theme: 'light' | 'dark' | 'system';
   onThemeToggle: (theme: 'light' | 'dark' | 'system') => void;
@@ -53,6 +56,8 @@ const Dashboard: FC<DashboardProps> = ({
   onAddProject,
   onDeleteProject,
   onDuplicateProject,
+  onDeleteAccountData,
+  onResetOnboarding,
   onLogout,
   theme,
   onThemeToggle,
@@ -64,6 +69,7 @@ const Dashboard: FC<DashboardProps> = ({
   const [projectToDuplicate, setProjectToDuplicate] = useState<{ id: string; name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'priority' | 'due'>('newest');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -340,6 +346,16 @@ const Dashboard: FC<DashboardProps> = ({
             {!isSidebarCollapsed && <span className="text-sm font-medium capitalize">{theme} Mode</span>}
           </button>
 
+          {/* Settings Toggle */}
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className={`flex items-center space-x-3 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            title="Settings"
+          >
+            <Settings className="w-5 h-5 flex-shrink-0" />
+            {!isSidebarCollapsed && <span className="text-sm font-medium">Settings</span>}
+          </button>
+
           <div className={`flex items-center space-x-3 px-2 py-2 w-full ${isSidebarCollapsed ? 'justify-center mb-0' : ''}`}>
             {user.photoURL && <img src={user.photoURL} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex-shrink-0" />}
             {!isSidebarCollapsed && <span className="text-sm font-medium truncate">{user.displayName}</span>}
@@ -463,6 +479,15 @@ const Dashboard: FC<DashboardProps> = ({
         projectName={projectToDuplicate?.name || ''}
         onConfirm={(newName, copyTasks) => projectToDuplicate && onDuplicateProject(projectToDuplicate.id, newName, copyTasks)}
         onCancel={() => setProjectToDuplicate(null)}
+      />
+
+      {/* User Settings Dialog */}
+      <SettingsDialog 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={user}
+        onDeleteData={onDeleteAccountData}
+        onResetOnboarding={onResetOnboarding}
       />
     </div>
   );

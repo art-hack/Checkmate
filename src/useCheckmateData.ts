@@ -287,6 +287,22 @@ export const useCheckmateData = (user: User | null) => {
     await batch.commit();
   };
 
+  const handleDeleteAccountData = async () => {
+    if (!user) return;
+    const batch = writeBatch(db);
+    
+    // Delete all projects
+    projects.forEach(p => batch.delete(doc(db, "projects", p.id)));
+    // Delete all checklists
+    checklists.forEach(c => batch.delete(doc(db, "checklists", c.id)));
+    // Delete all tasks
+    tasks.forEach(t => batch.delete(doc(db, "tasks", t.id)));
+    
+    await batch.commit();
+    // After deletion, initializeUserInbox will be triggered by the useEffect listener
+    // as projects.length will become 0
+  };
+
   const onAddChecklist = async (name: string, projectId: string) => {
     if (!user) return;
     const projectChecklists = checklists.filter(c => c.projectId === projectId);
@@ -405,6 +421,7 @@ export const useCheckmateData = (user: User | null) => {
     handleEditChecklist,
     handleClearDoneTasks,
     onAddChecklist,
-    handleInitializeSampleData
+    handleInitializeSampleData,
+    handleDeleteAccountData
   };
 };
