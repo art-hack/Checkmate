@@ -68,12 +68,8 @@ const Dashboard: FC<DashboardProps> = ({
   // Handle Global Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if any dialog/modal is open
-      const isModalOpen = document.querySelector('[role="dialog"]') !== null;
-      if (isModalOpen) return;
-
-      // Alt + N: Focus Quick Add
-      if (e.altKey && (e.key === 'n' || e.key === 'N' || e.code === 'KeyN')) {
+      // Alt + Q: Focus Quick Add
+      if (e.altKey && (e.key === 'q' || e.key === 'Q' || e.code === 'KeyQ')) {
         e.preventDefault();
         
         // If not on the board, switch to it
@@ -81,14 +77,14 @@ const Dashboard: FC<DashboardProps> = ({
           onSelectProject(null);
         }
 
-        // Wait for potential layout switch
+        // Wait for potential layout switch and focus
         setTimeout(() => {
           const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
           if (quickAddInput) {
             quickAddInput.focus();
             quickAddInput.select();
           }
-        }, 150);
+        }, 200); // Slightly longer timeout for stability
       }
     };
 

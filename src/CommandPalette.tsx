@@ -145,8 +145,11 @@ const CommandPalette: FC<CommandPaletteProps> = ({
                     onSelectProject(null);
                     setTimeout(() => {
                       const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
-                      if (quickAddInput) quickAddInput.focus();
-                    }, 100);
+                      if (quickAddInput) {
+                        quickAddInput.focus();
+                        quickAddInput.select();
+                      }
+                    }, 200);
                   }}
                   className="flex items-center space-x-3 px-3 py-2.5 rounded-xl cursor-default select-none hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors aria-selected:bg-action-indigo aria-selected:text-white"
                 >
@@ -154,7 +157,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
                   <span>Create New Task...</span>
                   <div className="flex items-center space-x-1 ml-auto">
                     <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 group-aria-selected:bg-white/20 group-aria-selected:text-white transition-colors">Alt</kbd>
-                    <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 group-aria-selected:bg-white/20 group-aria-selected:text-white transition-colors">N</kbd>
+                    <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 group-aria-selected:bg-white/20 group-aria-selected:text-white transition-colors">Q</kbd>
                   </div>
                 </Command.Item>
                 <Command.Item 
