@@ -133,7 +133,6 @@ function App() {
         projects={projects}
         tasks={tasks}
         onSelectProject={setActiveProjectId}
-        onToggleTask={handleToggleTask}
       />
       <Dashboard 
         user={user}

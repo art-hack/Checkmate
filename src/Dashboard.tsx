@@ -71,7 +71,7 @@ const Dashboard: FC<DashboardProps> = ({
       // Alt + N: Focus Quick Add
       if (e.altKey && e.key === 'n') {
         e.preventDefault();
-        const quickAddInput = document.querySelector('input[placeholder*="Quick-add"]') as HTMLInputElement;
+        const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
         if (quickAddInput) {
           quickAddInput.focus();
         }
