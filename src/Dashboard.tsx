@@ -68,6 +68,10 @@ const Dashboard: FC<DashboardProps> = ({
   // Handle Global Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if any dialog/modal is open
+      const isModalOpen = document.querySelector('[role="dialog"]') !== null;
+      if (isModalOpen) return;
+
       // Alt + N: Focus Quick Add
       if (e.altKey && (e.key === 'n' || e.key === 'N' || e.code === 'KeyN')) {
         e.preventDefault();
@@ -82,7 +86,6 @@ const Dashboard: FC<DashboardProps> = ({
           const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
           if (quickAddInput) {
             quickAddInput.focus();
-            // Optional: select all text if any
             quickAddInput.select();
           }
         }, 150);

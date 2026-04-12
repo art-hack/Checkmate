@@ -53,13 +53,17 @@ const CommandPalette: FC<CommandPaletteProps> = ({
     <Command.Dialog 
       open={open} 
       onOpenChange={setOpen} 
-      label="Global Command Palette"
+      label="Command Palette"
       className="fixed inset-0 z-[500] flex items-start justify-center pt-[15vh] p-4 bg-slate-950/40 backdrop-blur-sm"
       onKeyDown={(e) => {
         // Escape or Backspace (when empty) goes back a page
-        if (e.key === 'Escape' && pages.length > 0) {
-          e.preventDefault();
-          setPages((pages) => pages.slice(0, -1));
+        if (e.key === 'Escape') {
+          if (pages.length > 0) {
+            e.preventDefault();
+            setPages((pages) => pages.slice(0, -1));
+          } else {
+            setOpen(false);
+          }
         }
         if (e.key === 'Backspace' && !search && pages.length > 0) {
           e.preventDefault();
@@ -68,6 +72,12 @@ const CommandPalette: FC<CommandPaletteProps> = ({
       }}
     >
       <div className="w-full max-w-[640px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col transition-all">
+        {/* Accessibility Title & Description */}
+        <div className="sr-only">
+          <h2>Command Palette</h2>
+          <p>Search for projects, tasks, and navigate the application using your keyboard.</p>
+        </div>
+
         <div className="flex items-center border-b border-slate-100 dark:border-slate-800 px-4">
           {pages.length > 0 && (
             <button 
