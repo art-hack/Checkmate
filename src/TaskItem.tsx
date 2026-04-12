@@ -23,7 +23,6 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ConfirmationDialog from './ConfirmationDialog';
 import type { Task, Project, Checklist } from './types';
-
 interface TaskItemProps {
   task: Task;
   allTasks: Task[];
@@ -36,6 +35,7 @@ interface TaskItemProps {
   onDelete: (taskId: string) => void;
   onMove?: (taskId: string, newProjectId: string, newChecklistId: string) => void;
   hideGrip?: boolean;
+  showProjectName?: boolean;
 }
 
 const TaskItem: FC<TaskItemProps> = ({ 
@@ -49,8 +49,11 @@ const TaskItem: FC<TaskItemProps> = ({
   onUpdate,
   onDelete,
   onMove,
-  hideGrip = false
+  hideGrip = false,
+  showProjectName = false
 }) => {
+  // ... (state and refs)
+
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [newSubtaskText, setNewSubtaskText] = useState('');
@@ -236,7 +239,7 @@ const TaskItem: FC<TaskItemProps> = ({
         </button>
 
         <div className="flex flex-col flex-grow min-w-0 pr-2">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between space-x-4">
             {isEditing ? (
               <form onSubmit={handleEditSubmit} className="flex-grow min-w-0">
                 <input
@@ -257,6 +260,7 @@ const TaskItem: FC<TaskItemProps> = ({
               </span>
             )}
 
+            {/* Metadata Group: Tight layout, hides on hover actions */}
             <div className="flex items-center space-x-2 flex-shrink-0 group-hover:opacity-0 transition-opacity">
               {task.priority && (
                 <Flag className={`w-3 h-3 ${priorityColors[task.priority]}`} />
@@ -265,6 +269,11 @@ const TaskItem: FC<TaskItemProps> = ({
                 <div className={`flex items-center space-x-1 text-[10px] font-bold px-1.5 py-0.5 rounded ${isOverdue ? 'bg-red-100 text-red-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
                   <Calendar className="w-2.5 h-2.5" />
                   <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                </div>
+              )}
+              {showProjectName && projects && (
+                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/50 px-2.5 py-1 rounded uppercase tracking-wider max-w-[180px] truncate border border-slate-200 dark:border-slate-700/50">
+                  {projects.find(p => p.id === task.projectId)?.name}
                 </div>
               )}
             </div>
