@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { 
   X, 
   User as UserIcon, 
@@ -7,7 +7,9 @@ import {
   AlertTriangle,
   Download,
   Upload,
-  FileText
+  FileText,
+  Clock,
+  ShieldCheck
 } from 'lucide-react';
 import type { User, Project, Task, Checklist } from './types';
 
@@ -37,6 +39,19 @@ const SettingsDialog: FC<SettingsDialogProps> = ({
   const [importText, setImportText] = useState('');
   const [importProjectName, setImportProjectName] = useState('Bulk Import');
   const [isImporting, setIsImporting] = useState(false);
+
+  // Auto-clear settings
+  const [autoClearEnabled, setAutoClearEnabled] = useState(() => {
+    return localStorage.getItem(`autoclear_enabled_${user.uid}`) === 'true';
+  });
+  const [autoClearHours, setAutoClearHours] = useState(() => {
+    return parseInt(localStorage.getItem(`autoclear_hours_${user.uid}`) || '24');
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`autoclear_enabled_${user.uid}`, autoClearEnabled.toString());
+    localStorage.setItem(`autoclear_hours_${user.uid}`, autoClearHours.toString());
+  }, [autoClearEnabled, autoClearHours, user.uid]);
 
   if (!isOpen) return null;
 
@@ -105,6 +120,41 @@ const SettingsDialog: FC<SettingsDialogProps> = ({
                 <p className="font-bold text-slate-900 dark:text-white truncate">{user.displayName}</p>
                 <p className="text-sm text-slate-500 truncate">{user.email}</p>
               </div>
+            </div>
+          </section>
+
+          {/* Workflow Section */}
+          <section className="space-y-4">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Workflow</h3>
+            
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-200">
+                  <ShieldCheck className="w-4 h-4 text-victory-green" />
+                  <span className="text-sm font-bold">Auto-clear Done Tasks</span>
+                </div>
+                <button 
+                  onClick={() => setAutoClearEnabled(!autoClearEnabled)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${autoClearEnabled ? 'bg-victory-green' : 'bg-slate-300 dark:bg-slate-600'}`}
+                >
+                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${autoClearEnabled ? 'right-1' : 'left-1'}`} />
+                </button>
+              </div>
+              
+              {autoClearEnabled && (
+                <div className="flex items-center space-x-3 mt-2">
+                  <Clock className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs text-slate-500">Remove after</span>
+                  <input 
+                    type="number" 
+                    value={autoClearHours}
+                    onChange={(e) => setAutoClearHours(parseInt(e.target.value) || 1)}
+                    className="w-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-xs outline-none focus:border-action-indigo"
+                  />
+                  <span className="text-xs text-slate-500">hours</span>
+                </div>
+              )}
+              <p className="text-[10px] text-slate-400 mt-3 italic">Clean up your workspace by automatically archiving tasks after they're completed.</p>
             </div>
           </section>
 

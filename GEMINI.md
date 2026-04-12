@@ -52,18 +52,18 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Task Links: Auto-detection and rendering of URLs as clickable icons in task text.
 - ✅ Command Palette: `Ctrl+K` interface for global project switching and task search.
 - ✅ Onboarding Experience: Visual welcome tour for new users with a Chess-themed sample project ("Grandmaster Path").
-- ✅ Settings Panel: Centralized hub for profile management, onboarding reset, and full account data wiping.
+- ✅ Settings Panel: Centralized hub for profile management, onboarding reset, data export, and full account wiping.
+- ✅ Data Portability: JSON export tool and bulk task list importer for seamless project creation.
 - ✅ Accessibility: Comprehensive `aria-label` coverage, keyboard focus states, and SR-compliant dialogs.
 
 ## 🛠️ Next Steps / Roadmap
 
 ### 🔴 High Priority (Immediate)
-1. **Bulk Import Tool:** Implement a text-based uploader in Settings to create projects from newline-separated task lists.
-2. **Auto-clear Workflow:** Option to automatically move or archive completed tasks after a configurable time window.
+1. **Auto-clear Workflow:** Option to automatically move or archive completed tasks after a configurable time window.
 
 ### 🔵 Low Priority (Analytics & Scale)
-3. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
-4. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
+2. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
+3. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
 
 ---
 *Last Updated: April 12, 2026*

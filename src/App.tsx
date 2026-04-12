@@ -56,8 +56,29 @@ function App() {
     onAddChecklist,
     handleInitializeSampleData,
     handleDeleteAccountData,
-    handleImportRawText
+    handleImportRawText,
+    handleAutoClear
   } = useCheckmateData(user);
+
+  // Auto-clear Effect
+  useEffect(() => {
+    if (user && !dataLoading) {
+      const isEnabled = localStorage.getItem(`autoclear_enabled_${user.uid}`) === 'true';
+      const hours = parseInt(localStorage.getItem(`autoclear_hours_${user.uid}`) || '24');
+      
+      if (isEnabled) {
+        // Run once on load
+        handleAutoClear(hours);
+        
+        // Then run every hour
+        const interval = setInterval(() => {
+          handleAutoClear(hours);
+        }, 1000 * 60 * 60);
+        
+        return () => clearInterval(interval);
+      }
+    }
+  }, [user, dataLoading, tasks.length]); // Re-run if task count changes
 
   // Check for new user (no projects besides Inbox)
   useEffect(() => {

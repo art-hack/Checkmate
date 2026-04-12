@@ -114,9 +114,33 @@ export const useCheckmateData = (user: User | null) => {
   const handleToggleTask = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
+    const isNowCompleted = !task.completed;
     await updateDoc(doc(db, "tasks", taskId), {
-      completed: !task.completed
+      completed: isNowCompleted,
+      completedAt: isNowCompleted ? serverTimestamp() : null
     });
+  };
+
+  const handleAutoClear = async (hours: number) => {
+    if (!user || hours <= 0) return;
+    const now = new Date();
+    const batch = writeBatch(db);
+    let deletedCount = 0;
+
+    tasks.filter(t => t.completed && t.completedAt).forEach(t => {
+      const completedDate = new Date(t.completedAt!);
+      const diffHours = (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60);
+      
+      if (diffHours >= hours) {
+        batch.delete(doc(db, "tasks", t.id));
+        deletedCount++;
+      }
+    });
+
+    if (deletedCount > 0) {
+      await batch.commit();
+      console.log(`Auto-cleared ${deletedCount} tasks older than ${hours} hours.`);
+    }
   };
 
   const handleEditTask = async (taskId: string, newText: string) => {
@@ -484,6 +508,7 @@ export const useCheckmateData = (user: User | null) => {
     onAddChecklist,
     handleInitializeSampleData,
     handleDeleteAccountData,
-    handleImportRawText
+    handleImportRawText,
+    handleAutoClear
   };
 };

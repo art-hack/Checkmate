@@ -32,6 +32,7 @@ export interface Task {
   ownerId: string;
   order: number;
   createdAt: Date; // Firestore Timestamp or Date
+  completedAt?: Date | null;
   dueDate?: Date | null;
   priority?: 'high' | 'medium' | 'low';
 }
