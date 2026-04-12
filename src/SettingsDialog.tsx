@@ -1,34 +1,82 @@
-import { type FC } from 'react';
+import { useState, type FC } from 'react';
 import { 
   X, 
   User as UserIcon, 
   Settings as SettingsIcon,
   HelpCircle,
-  AlertTriangle
+  AlertTriangle,
+  Download,
+  Upload,
+  FileText
 } from 'lucide-react';
-import type { User } from './types';
+import type { User, Project, Task, Checklist } from './types';
 
 interface SettingsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   user: User;
+  projects: Project[];
+  checklists: Checklist[];
+  tasks: Task[];
   onDeleteData: () => void;
   onResetOnboarding: () => void;
+  onImportRawText: (text: string, projectName: string) => Promise<string | undefined>;
 }
 
 const SettingsDialog: FC<SettingsDialogProps> = ({ 
   isOpen, 
   onClose, 
   user, 
+  projects,
+  checklists,
+  tasks,
   onDeleteData,
-  onResetOnboarding
+  onResetOnboarding,
+  onImportRawText
 }) => {
+  const [importText, setImportText] = useState('');
+  const [importProjectName, setImportProjectName] = useState('Bulk Import');
+  const [isImporting, setIsImporting] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleExport = () => {
+    const data = {
+      exportDate: new Date().toISOString(),
+      user: { uid: user.uid, email: user.email },
+      projects,
+      checklists,
+      tasks
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `checkmate-export-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = async () => {
+    if (!importText.trim()) return;
+    setIsImporting(true);
+    try {
+      await onImportRawText(importText, importProjectName);
+      setImportText('');
+      setImportProjectName('Bulk Import');
+      alert('Import successful!');
+    } catch (err) {
+      console.error(err);
+      alert('Import failed.');
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
           <div className="flex items-center space-x-2 font-bold text-slate-800 dark:text-white">
             <SettingsIcon className="w-5 h-5 text-action-indigo" />
             <span>Settings</span>
@@ -41,7 +89,7 @@ const SettingsDialog: FC<SettingsDialogProps> = ({
           </button>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar">
           {/* Profile Section */}
           <section>
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Account</h3>
@@ -57,6 +105,61 @@ const SettingsDialog: FC<SettingsDialogProps> = ({
                 <p className="font-bold text-slate-900 dark:text-white truncate">{user.displayName}</p>
                 <p className="text-sm text-slate-500 truncate">{user.email}</p>
               </div>
+            </div>
+          </section>
+
+          {/* Data Portability */}
+          <section className="space-y-4">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Data Portability</h3>
+            
+            {/* Export */}
+            <div className="p-4 bg-indigo-50/50 dark:bg-action-indigo/5 rounded-xl border border-indigo-100 dark:border-action-indigo/20">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2 text-indigo-700 dark:text-indigo-400">
+                  <Download className="w-4 h-4" />
+                  <span className="text-sm font-bold">Export My Data</span>
+                </div>
+                <button 
+                  onClick={handleExport}
+                  className="px-4 py-1.5 bg-action-indigo text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
+                >
+                  Download JSON
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Download all your projects, checklists, and tasks in a single JSON file.</p>
+            </div>
+
+            {/* Import */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 space-y-4">
+              <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-300">
+                <Upload className="w-4 h-4" />
+                <span className="text-sm font-bold">Bulk Import</span>
+              </div>
+              
+              <div className="space-y-2">
+                <input 
+                  type="text" 
+                  value={importProjectName}
+                  onChange={(e) => setImportProjectName(e.target.value)}
+                  placeholder="New Project Name..."
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs outline-none focus:border-action-indigo"
+                />
+                <textarea 
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder="Paste tasks here (one per line)..."
+                  className="w-full h-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs outline-none focus:border-action-indigo resize-none"
+                />
+              </div>
+
+              <button 
+                onClick={handleImport}
+                disabled={isImporting || !importText.trim()}
+                className="w-full flex items-center justify-center space-x-2 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-all"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{isImporting ? 'Importing...' : 'Import Task List'}</span>
+              </button>
             </div>
           </section>
 
@@ -99,7 +202,7 @@ const SettingsDialog: FC<SettingsDialogProps> = ({
           </section>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 text-center">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 text-center flex-shrink-0">
           <p className="text-[10px] text-slate-400 font-medium">CheckMate v1.0.0 • Master your strategy</p>
         </div>
       </div>

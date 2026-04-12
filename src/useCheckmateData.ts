@@ -420,6 +420,47 @@ export const useCheckmateData = (user: User | null) => {
     return projectId;
   };
 
+  const handleImportRawText = async (text: string, projectName: string) => {
+    if (!user || !text.trim()) return;
+    
+    // 1. Create the project
+    const projectRef = await addDoc(projectsCol, {
+      name: projectName,
+      ownerId: user.uid,
+      createdAt: serverTimestamp(),
+      completed: false,
+      progress: 0
+    });
+    
+    // 2. Create default checklist
+    const checklistRef = await addDoc(checklistsCol, {
+      name: 'Imported Tasks',
+      projectId: projectRef.id,
+      ownerId: user.uid,
+      order: 1
+    });
+
+    // 3. Add tasks
+    const lines = text.split('\n').filter(l => l.trim());
+    const batch = writeBatch(db);
+    lines.forEach((line, index) => {
+      const tRef = doc(tasksCol);
+      batch.set(tRef, {
+        text: line.trim(),
+        completed: false,
+        projectId: projectRef.id,
+        checklistId: checklistRef.id,
+        parentId: null,
+        ownerId: user.uid,
+        order: index + 1,
+        createdAt: serverTimestamp()
+      });
+    });
+    
+    await batch.commit();
+    return projectRef.id;
+  };
+
   return {
     projects,
     checklists,
@@ -442,6 +483,7 @@ export const useCheckmateData = (user: User | null) => {
     handleClearDoneTasks,
     onAddChecklist,
     handleInitializeSampleData,
-    handleDeleteAccountData
+    handleDeleteAccountData,
+    handleImportRawText
   };
 };

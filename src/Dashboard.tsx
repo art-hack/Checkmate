@@ -34,6 +34,7 @@ interface DashboardProps {
   onDuplicateProject: (projectId: string, newName: string, copyTasks: boolean) => void;
   onDeleteAccountData: () => void;
   onResetOnboarding: () => void;
+  onImportRawText: (text: string, projectName: string) => Promise<string | undefined>;
   onLogout: () => void;
   theme: 'light' | 'dark' | 'system';
   onThemeToggle: (theme: 'light' | 'dark' | 'system') => void;
@@ -58,6 +59,7 @@ const Dashboard: FC<DashboardProps> = ({
   onDuplicateProject,
   onDeleteAccountData,
   onResetOnboarding,
+  onImportRawText,
   onLogout,
   theme,
   onThemeToggle,
@@ -484,8 +486,12 @@ const Dashboard: FC<DashboardProps> = ({
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         user={user}
+        projects={projects}
+        checklists={checklists}
+        tasks={tasks}
         onDeleteData={onDeleteAccountData}
         onResetOnboarding={onResetOnboarding}
+        onImportRawText={onImportRawText}
       />
     </div>
   );

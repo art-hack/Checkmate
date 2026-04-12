@@ -55,7 +55,8 @@ function App() {
     handleClearDoneTasks,
     onAddChecklist,
     handleInitializeSampleData,
-    handleDeleteAccountData
+    handleDeleteAccountData,
+    handleImportRawText
   } = useCheckmateData(user);
 
   // Check for new user (no projects besides Inbox)
@@ -220,6 +221,7 @@ function App() {
         onDuplicateProject={onDuplicateProject}
         onDeleteAccountData={onDeleteAccountData}
         onResetOnboarding={onResetOnboarding}
+        onImportRawText={handleImportRawText}
         onLogout={logout}
         theme={theme}
         onThemeToggle={setTheme}
