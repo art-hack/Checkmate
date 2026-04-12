@@ -271,24 +271,25 @@ const TaskItem: FC<TaskItemProps> = ({
           </div>
         </div>
 
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm border border-slate-100 dark:border-slate-800">
+        {/* Floating Action Bar - More integrated gelled look */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm border border-slate-200/30 dark:border-slate-700/30">
           <button 
             onClick={() => setIsEditing(true)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+            className="p-1 text-slate-500 dark:text-slate-400 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Edit task"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setShowAddSubtask(!showAddSubtask)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+            className="p-1 text-slate-500 dark:text-slate-400 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Add subtask"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button 
             onClick={() => onDelete(task.id)}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
+            className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
             title="Delete task"
           >
             <Trash2 className="w-4 h-4" />
@@ -296,7 +297,7 @@ const TaskItem: FC<TaskItemProps> = ({
           <button 
             ref={moreButtonRef}
             onClick={toggleMoreMenu}
-            className={`p-1 rounded transition-colors ${showMoreMenu ? 'bg-slate-100 dark:bg-slate-800 text-action-indigo' : 'text-slate-400 dark:text-slate-500 hover:text-action-indigo'}`}
+            className={`p-1 rounded transition-colors ${showMoreMenu ? 'bg-action-indigo/10 text-action-indigo' : 'text-slate-500 dark:text-slate-400 hover:text-action-indigo'}`}
             title="More actions"
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -304,7 +305,7 @@ const TaskItem: FC<TaskItemProps> = ({
           {subtasks.length > 0 && (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
+              className="p-1 text-slate-500 dark:text-slate-400 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             >
               {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>

@@ -427,22 +427,26 @@ const Dashboard: FC<DashboardProps> = ({
                 <div className="p-4 space-y-1">
                   {activeTasks.length > 0 ? (
                     activeTasks.map(task => (
-                      <div key={task.id} className="relative group">
-                        <TaskItem 
-                          task={task} 
-                          allTasks={tasks} 
-                          projects={projects}
-                          checklists={checklists}
-                          onToggle={onToggleTask}
-                          onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
-                          onEdit={onEditTask}
-                          onUpdate={onUpdateTask}
-                          onDelete={onDeleteTask}
-                          onMove={onMoveTask}
-                          hideGrip={true}
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded uppercase pointer-events-none group-hover:opacity-0 transition-opacity duration-200 max-w-[120px] truncate">
-                          {projects.find(p => p.id === task.projectId)?.name}
+                      <div key={task.id} className="relative group flex items-center justify-between min-w-0">
+                        <div className="flex-grow min-w-0">
+                          <TaskItem 
+                            task={task} 
+                            allTasks={tasks} 
+                            projects={projects}
+                            checklists={checklists}
+                            onToggle={onToggleTask}
+                            onAddSubtask={() => {}} // Disabled on Dashboard for simplicity
+                            onEdit={onEditTask}
+                            onUpdate={onUpdateTask}
+                            onDelete={onDeleteTask}
+                            onMove={onMoveTask}
+                            hideGrip={true}
+                          />
+                        </div>
+                        <div className="flex-shrink-0 ml-4 flex items-center space-x-2 opacity-100 group-hover:opacity-0 transition-opacity duration-200 pointer-events-none">
+                          <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/50 px-2.5 py-1 rounded uppercase tracking-wider max-w-[180px] truncate border border-slate-200 dark:border-slate-700/50">
+                            {projects.find(p => p.id === task.projectId)?.name}
+                          </div>
                         </div>
                       </div>
                     ))
