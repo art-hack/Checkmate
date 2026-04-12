@@ -69,18 +69,29 @@ const Dashboard: FC<DashboardProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Alt + N: Focus Quick Add
-      if (e.altKey && e.key === 'n') {
+      if (e.altKey && (e.key === 'n' || e.key === 'N' || e.code === 'KeyN')) {
         e.preventDefault();
-        const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
-        if (quickAddInput) {
-          quickAddInput.focus();
+        
+        // If not on the board, switch to it
+        if (activeProjectId !== null) {
+          onSelectProject(null);
         }
+
+        // Wait for potential layout switch
+        setTimeout(() => {
+          const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
+          if (quickAddInput) {
+            quickAddInput.focus();
+            // Optional: select all text if any
+            quickAddInput.select();
+          }
+        }, 150);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [activeProjectId, onSelectProject]);
 
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);

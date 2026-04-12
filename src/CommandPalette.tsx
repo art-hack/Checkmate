@@ -131,10 +131,12 @@ const CommandPalette: FC<CommandPaletteProps> = ({
                 <Command.Item 
                   onSelect={() => {
                     setOpen(false);
+                    // Switch to board if not already there
+                    onSelectProject(null);
                     setTimeout(() => {
                       const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
                       if (quickAddInput) quickAddInput.focus();
-                    }, 50);
+                    }, 100);
                   }}
                   className="flex items-center space-x-3 px-3 py-2.5 rounded-xl cursor-default select-none hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors aria-selected:bg-action-indigo aria-selected:text-white"
                 >
