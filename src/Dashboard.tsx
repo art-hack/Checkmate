@@ -78,8 +78,18 @@ const Dashboard: FC<DashboardProps> = ({
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Some browsers (like iOS Safari) don't support beforeinstallprompt
+    // We can show a generic "How to Install" nudge if we detect those browsers,
+    // but for now, let's just make sure the state is handled correctly.
+    
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    
+    if (isStandalone) {
       setShowInstallNudge(false);
+    } else if (!('BeforeInstallPromptEvent' in window)) {
+      // If the browser doesn't support the event, we might want to show instructions anyway
+      // depending on the platform (e.g., iOS). For now, let's just log it.
+      console.log('beforeinstallprompt not supported in this browser');
     }
 
     return () => {
@@ -88,14 +98,18 @@ const Dashboard: FC<DashboardProps> = ({
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      // Fallback for browsers that don't support the prompt (like iOS)
+      alert('To install this app on your device: \n\n1. Tap the Share button\n2. Scroll down and tap "Add to Home Screen"');
+      return;
+    }
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       console.log('User accepted the install prompt');
+      setShowInstallNudge(false);
     }
     setDeferredPrompt(null);
-    setShowInstallNudge(false);
   };
 
   const activeTasks = tasks
