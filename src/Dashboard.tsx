@@ -1,10 +1,19 @@
-import { useState, type FC, type ReactNode, type FormEvent } from 'react';
-import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy, Moon, Sun, Monitor } from 'lucide-react';
+import { useState, useEffect, type FC, type ReactNode, type FormEvent } from 'react';
+import { LayoutDashboard, CheckSquare, ListTodo, LogOut, Plus, Trash2, Crown, Inbox as InboxIcon, ChevronLeft, ChevronRight, Copy, Moon, Sun, Monitor, Download } from 'lucide-react';
 import SmartQuickAdd from './SmartQuickAdd';
 import TaskItem from './TaskItem';
 import ConfirmationDialog from './ConfirmationDialog';
 import DuplicateProjectDialog from './DuplicateProjectDialog';
 import type { Project, Task, User, Checklist } from './types';
+
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
 
 interface DashboardProps {
   user: User;
@@ -55,6 +64,39 @@ const Dashboard: FC<DashboardProps> = ({
   const [projectToDuplicate, setProjectToDuplicate] = useState<{ id: string; name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'priority' | 'due'>('newest');
+
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallNudge, setShowInstallNudge] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setShowInstallNudge(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallNudge(false);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    }
+    setDeferredPrompt(null);
+    setShowInstallNudge(false);
+  };
 
   const activeTasks = tasks
     .filter(t => !t.completed && !t.parentId)
@@ -259,7 +301,19 @@ const Dashboard: FC<DashboardProps> = ({
           )}
         </nav>
 
-        <div className={`p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 ${isSidebarCollapsed ? 'px-4 flex flex-col items-center space-y-4' : ''}`}>
+        <div className={`p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 ${isSidebarCollapsed ? 'px-4 flex flex-col items-center space-y-4' : 'space-y-2'}`}>
+          {/* PWA Install Nudge */}
+          {showInstallNudge && (
+            <button 
+              onClick={handleInstallClick}
+              className={`flex items-center space-x-3 px-4 py-2 rounded-lg bg-action-indigo/10 text-action-indigo hover:bg-action-indigo hover:text-white transition-all w-full border border-action-indigo/20 ${isSidebarCollapsed ? 'justify-center' : ''}`}
+              title="Install CheckMate"
+            >
+              <Download className="w-5 h-5 flex-shrink-0" />
+              {!isSidebarCollapsed && <span className="text-sm font-bold">Install App</span>}
+            </button>
+          )}
+
           {/* Theme Toggle */}
           <button 
             onClick={cycleTheme}
