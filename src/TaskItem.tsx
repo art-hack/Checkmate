@@ -197,7 +197,6 @@ const TaskItem: FC<TaskItemProps> = ({
     setShowMoreMenu(false);
   };
 
-  const isRootTask = !task.parentId;
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
 
   const priorityColors = {
@@ -212,7 +211,7 @@ const TaskItem: FC<TaskItemProps> = ({
       style={style}
       className={`relative ${task.parentId ? 'ml-8 border-l-2 border-slate-200 dark:border-slate-800 pl-4' : 'pl-8'} pr-4 py-1.5 min-w-0 ${isDragging ? 'z-50' : ''}`}
     >
-      <div className="flex items-center group min-h-[32px] min-w-0">
+      <div className="flex items-center group min-h-[32px] min-w-0 relative">
         {/* Drag Handle */}
         {!hideGrip && (
           <div 
@@ -236,7 +235,7 @@ const TaskItem: FC<TaskItemProps> = ({
           )}
         </button>
 
-        <div className="flex flex-col flex-grow min-w-0">
+        <div className="flex flex-col flex-grow min-w-0 pr-2">
           <div className="flex items-center space-x-2">
             {isEditing ? (
               <form onSubmit={handleEditSubmit} className="flex-grow min-w-0">
@@ -258,8 +257,7 @@ const TaskItem: FC<TaskItemProps> = ({
               </span>
             )}
 
-            {/* Status Indicators */}
-            <div className="flex items-center space-x-2 flex-shrink-0">
+            <div className="flex items-center space-x-2 flex-shrink-0 group-hover:opacity-0 transition-opacity">
               {task.priority && (
                 <Flag className={`w-3 h-3 ${priorityColors[task.priority]}`} />
               )}
@@ -273,13 +271,11 @@ const TaskItem: FC<TaskItemProps> = ({
           </div>
         </div>
 
-        {/* Stable Action Bar - Fixed width to prevent jumping */}
-        <div className="flex items-center space-x-1 ml-2 flex-shrink-0 min-w-[100px] justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm border border-slate-100 dark:border-slate-800">
           <button 
             onClick={() => setIsEditing(true)}
             className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Edit task"
-            aria-label="Edit task"
           >
             <Edit2 className="w-4 h-4" />
           </button>
@@ -287,7 +283,6 @@ const TaskItem: FC<TaskItemProps> = ({
             onClick={() => setShowAddSubtask(!showAddSubtask)}
             className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             title="Add subtask"
-            aria-label="Add subtask"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -295,209 +290,121 @@ const TaskItem: FC<TaskItemProps> = ({
             onClick={() => onDelete(task.id)}
             className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-500 rounded transition-colors"
             title="Delete task"
-            aria-label="Delete task"
           >
             <Trash2 className="w-4 h-4" />
           </button>
-          
-          {/* More Menu Toggle */}
           <button 
             ref={moreButtonRef}
             onClick={toggleMoreMenu}
             className={`p-1 rounded transition-colors ${showMoreMenu ? 'bg-slate-100 dark:bg-slate-800 text-action-indigo' : 'text-slate-400 dark:text-slate-500 hover:text-action-indigo'}`}
             title="More actions"
-            aria-label="More actions"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
-
-          <div className="w-6 flex items-center justify-center">
-            {subtasks.length > 0 && (
-              <button 
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
-              >
-                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* More Menu Dropdown (Portaled) */}
-        {showMoreMenu && createPortal(
-          <div 
-            className="fixed z-[300]"
-            style={{ top: menuPosition.top, left: menuPosition.left }}
-          >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 5 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden py-1"
+          {subtasks.length > 0 && (
+            <button 
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1 text-slate-400 dark:text-slate-500 hover:text-action-indigo dark:hover:text-action-indigo rounded transition-colors"
             >
+              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showMoreMenu && createPortal(
+        <div 
+          className="fixed z-[300]"
+          style={{ top: menuPosition.top, left: menuPosition.left }}
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden py-1"
+          >
+            <button 
+              onClick={cyclePriority}
+              className="w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Flag className={`w-4 h-4 ${task.priority ? priorityColors[task.priority] : 'text-slate-400'}`} />
+              <span>Priority: <span className="capitalize">{task.priority || 'Low'}</span></span>
+            </button>
+            <div className="relative w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <span>Set Due Date</span>
+              <input type="date" onChange={handleDateChange} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+            </div>
+            {onMove && !task.parentId && (
               <button 
-                onClick={cyclePriority}
+                onClick={handleMoveMenuToggle}
                 className="w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
-                <Flag className={`w-4 h-4 ${task.priority ? priorityColors[task.priority] : 'text-slate-400'}`} />
-                <span>Priority: <span className="capitalize">{task.priority || 'Low'}</span></span>
+                <Move className="w-4 h-4 text-slate-400" />
+                <span>Move to Project</span>
               </button>
+            )}
+            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
+            <button onClick={handleDeleteClick} className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Task</span>
+            </button>
+          </motion.div>
+          <div className="fixed inset-0 -z-10" onClick={() => setShowMoreMenu(false)} />
+        </div>,
+        document.body
+      )}
 
-              <div className="relative w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                <span>Set Due Date</span>
-                <input 
-                  type="date"
-                  onChange={handleDateChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
+      {showMoveMenu && projects && checklists && createPortal(
+        <div className="fixed z-[300]" style={{ top: menuPosition.top, left: menuPosition.left }}>
+          <AnimatePresence>
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 5 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 5 }} className="w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">{selectedMoveProject ? 'Select Section' : 'Move Task'}</span>
+                <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>
               </div>
-
-              {isRootTask && onMove && (
-                <button 
-                  onClick={handleMoveMenuToggle}
-                  className="w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                  <Move className="w-4 h-4 text-slate-400" />
-                  <span>Move to Project</span>
-                </button>
-              )}
-              
-              <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
-              
-              <button 
-                onClick={handleDeleteClick}
-                className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Delete Task</span>
-              </button>
-            </motion.div>
-            <div className="fixed inset-0 -z-10" onClick={() => setShowMoreMenu(false)} />
-          </div>,
-          document.body
-        )}
-
-        {/* Move Menu Dropdown (Portaled) */}
-        {showMoveMenu && projects && checklists && createPortal(
-          <div 
-            className="fixed z-[300]"
-            style={{ top: menuPosition.top, left: menuPosition.left }}
-          >
-            <AnimatePresence>
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 5 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 5 }}
-                className="w-64 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
-              >
-                <div className="p-2 bg-slate-50 dark:bg-slate-700/50 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
-                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">
-                    {selectedMoveProject ? 'Select Section' : 'Move Task'}
-                  </span>
-                  <button onClick={() => { setShowMoveMenu(false); setSelectedMoveProject(null); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 transition-colors" aria-label="Close menu">
-                    <X className="w-4 h-4" />
+              <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                {!selectedMoveProject ? projects.map(p => (
+                  <button key={p.id} onClick={() => setSelectedMoveProject(p)} className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800">
+                    <Hash className="w-4 h-4 text-slate-400 dark:text-slate-500" /><span className="text-sm font-medium text-slate-700 dark:text-slate-200">{p.name}</span>
                   </button>
-                </div>
-
-                <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                  {!selectedMoveProject ? (
-                    projects.map(p => (
-                      <button 
-                        key={p.id}
-                        onClick={() => setSelectedMoveProject(p)}
-                        className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
-                      >
-                        <Hash className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{p.name}</span>
+                )) : (
+                  <>
+                    <button onClick={() => setSelectedMoveProject(null)} className="w-full flex items-center space-x-3 px-4 py-2 text-left bg-slate-50 dark:bg-slate-900/50 text-action-indigo font-bold border-b border-slate-100 dark:border-slate-800">
+                      <ChevronRight className="w-4 h-4 rotate-180" /><span className="text-xs">Back to Projects</span>
+                    </button>
+                    {checklists.filter(c => c.projectId === selectedMoveProject.id).map(c => (
+                      <button key={c.id} onClick={() => handleMoveSelect(c.id)} className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800">
+                        <ListTodo className="w-4 h-4 text-action-indigo" /><span className="text-sm font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
                       </button>
-                    ))
-                  ) : (
-                    <>
-                      <button 
-                        onClick={() => setSelectedMoveProject(null)}
-                        className="w-full flex items-center space-x-3 px-4 py-2 text-left bg-slate-50 dark:bg-slate-900/50 text-action-indigo font-bold border-b border-slate-100 dark:border-slate-800"
-                      >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
-                        <span className="text-xs">Back to Projects</span>
-                      </button>
-                      {checklists.filter(c => c.projectId === selectedMoveProject.id).map(c => (
-                        <button 
-                          key={c.id}
-                          onClick={() => handleMoveSelect(c.id)}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b last:border-0 border-slate-100 dark:border-slate-800"
-                        >
-                          <ListTodo className="w-4 h-4 text-action-indigo" />
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>,
-          document.body
-        )}
-      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>,
+        document.body
+      )}
 
       <AnimatePresence>
         {showAddSubtask && (
-          <motion.form 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            onSubmit={handleAddSubtask}
-            className="mt-2 flex items-center ml-8"
-          >
-            <input 
-              autoFocus
-              type="text"
-              value={newSubtaskText}
-              onChange={(e) => setNewSubtaskText(e.target.value)}
-              placeholder="New subtask..."
-              className="flex-grow border-b border-action-indigo bg-transparent outline-none px-2 py-1 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
-            />
+          <motion.form initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} onSubmit={handleAddSubtask} className="mt-2 flex items-center ml-8">
+            <input autoFocus type="text" value={newSubtaskText} onChange={(e) => setNewSubtaskText(e.target.value)} placeholder="New subtask..." className="flex-grow border-b border-action-indigo bg-transparent outline-none px-2 py-1 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400" />
           </motion.form>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {isExpanded && subtasks.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             {subtasks.map(subtask => (
-              <TaskItem 
-                key={subtask.id} 
-                task={subtask} 
-                allTasks={allTasks} 
-                projects={projects}
-                checklists={checklists}
-                onToggle={onToggle}
-                onAddSubtask={onAddSubtask}
-                onEdit={onEdit}
-                onUpdate={onUpdate}
-                onDelete={onDelete}
-                onMove={onMove}
-                hideGrip={hideGrip}
-              />
+              <TaskItem key={subtask.id} task={subtask} allTasks={allTasks} projects={projects} checklists={checklists} onToggle={onToggle} onAddSubtask={onAddSubtask} onEdit={onEdit} onUpdate={onUpdate} onDelete={onDelete} onMove={onMove} hideGrip={hideGrip} />
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <ConfirmationDialog 
-        isOpen={showDeleteConfirm}
-        title="Delete Task & Subtasks"
-        message={`This task has ${subtasks.length} subtasks. Are you sure you want to delete the entire tree? This action cannot be undone.`}
-        confirmLabel="Delete Everything"
-        onConfirm={() => onDelete(task.id)}
-        onCancel={() => setShowDeleteConfirm(false)}
-        isDanger={true}
-      />
+      <ConfirmationDialog isOpen={showDeleteConfirm} title="Delete Task & Subtasks" message={`This task has ${subtasks.length} subtasks. Are you sure you want to delete the entire tree? This action cannot be undone.`} confirmLabel="Delete Everything" onConfirm={() => onDelete(task.id)} onCancel={() => setShowDeleteConfirm(false)} isDanger={true} />
     </div>
   );
 };

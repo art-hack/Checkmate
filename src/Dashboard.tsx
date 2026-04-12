@@ -441,7 +441,7 @@ const Dashboard: FC<DashboardProps> = ({
                           onMove={onMoveTask}
                           hideGrip={true}
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded uppercase pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100/50 dark:bg-slate-800/50 px-2 py-0.5 rounded uppercase pointer-events-none group-hover:opacity-0 transition-opacity duration-200 max-w-[120px] truncate">
                           {projects.find(p => p.id === task.projectId)?.name}
                         </div>
                       </div>
