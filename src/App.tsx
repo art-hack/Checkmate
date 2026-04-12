@@ -90,10 +90,10 @@ function App() {
   };
 
   const onDeleteAccountData = async () => {
-    if (window.confirm("ARE YOU ABSOLUTELY SURE? This will wipe all your projects and tasks forever.")) {
+    if (window.confirm("ARE YOU ABSOLUTELY SURE? This will wipe all your projects and tasks forever. You will be logged out automatically.")) {
       await handleDeleteAccountData();
       setActiveProjectId(null);
-      // After wiping, the useEffect for onboarding will trigger automatically
+      await logout();
     }
   };
 
