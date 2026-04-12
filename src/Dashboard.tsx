@@ -169,13 +169,15 @@ const Dashboard: FC<DashboardProps> = ({
     const isCompleted = progress === 100;
     
     return (
-      <button 
+      <div 
         key={project.id}
-        onClick={() => onSelectProject(project.id)}
-        title={isSidebarCollapsed ? project.name : ''}
         className={`group w-full flex items-center rounded-lg transition-all ${isSidebarCollapsed ? 'justify-center px-0 py-2' : 'justify-between px-4 py-2'} ${activeProjectId === project.id ? 'bg-action-indigo text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
       >
-        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3 truncate'}`}>
+        <button 
+          onClick={() => onSelectProject(project.id)}
+          title={isSidebarCollapsed ? project.name : ''}
+          className={`flex items-center flex-grow text-left focus:outline-none ${isSidebarCollapsed ? 'justify-center' : 'space-x-3 truncate'}`}
+        >
           {isInbox ? (
             <InboxIcon className={`w-5 h-5 flex-shrink-0 ${activeProjectId === project.id ? 'text-white' : 'text-slate-400'}`} />
           ) : isCompleted ? (
@@ -188,11 +190,11 @@ const Dashboard: FC<DashboardProps> = ({
               {project.name}
             </span>
           )}
-        </div>
+        </button>
         {!isSidebarCollapsed && !isInbox && (
           <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
-              onClick={(e) => handleDuplicateClick(e, project.id, project.name)}
+              onClick={(e) => { e.stopPropagation(); handleDuplicateClick(e, project.id, project.name); }}
               className={`p-1 rounded hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
               title="Duplicate project"
               aria-label={`Duplicate project ${project.name}`}
@@ -200,7 +202,7 @@ const Dashboard: FC<DashboardProps> = ({
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button 
-              onClick={(e) => handleDeleteClick(e, project.id, project.name)}
+              onClick={(e) => { e.stopPropagation(); handleDeleteClick(e, project.id, project.name); }}
               className={`p-1 rounded hover:bg-white/20 transition-colors hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${activeProjectId === project.id ? 'text-indigo-100' : 'text-slate-400'}`}
               title="Delete project"
               aria-label={`Delete project ${project.name}`}
@@ -209,7 +211,7 @@ const Dashboard: FC<DashboardProps> = ({
             </button>
           </div>
         )}
-      </button>
+      </div>
     );
   };
 
