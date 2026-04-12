@@ -46,15 +46,24 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Collapsible Sidebar: Toggleable minimized state with centered icons and tooltips.
 - ✅ Task & Checklist management: Recursive editing, reordering, and themed deletion logic.
 - ✅ Task Enrichment: Added support for due dates (with overdue warnings), priority levels (Green/Orange/Red), and strategic sorting on The Board.
-- ✅ UI Refinements: Simplified task action bar with a consolidated "More" menu, stable layout transitions, and improved contrast for dark mode.
-- ✅ Performance & SEO: Manual chunking, sourcemaps, meta tags, and robots.txt.
-- ✅ Accessibility: Comprehensive `aria-label` coverage and keyboard focus states.
+- ✅ UI Refinements: Absolute-positioned "gelled" task action bars, improved Board layout, and high-contrast dark mode.
+- ✅ PWA Install Nudge: Logic to handle `beforeinstallprompt` and a dedicated sidebar button.
+- ✅ Firebase Hosting: Live deployment on `checkmate-list.web.app` with custom rewrite rules.
+- ✅ Task Links: Auto-detection and rendering of URLs as clickable icons in task text.
+- ✅ Command Palette: `Ctrl+K` interface for global project switching and task search.
+- ✅ Onboarding Experience: Visual welcome tour for new users with a Chess-themed sample project ("Grandmaster Path").
+- ✅ Settings Panel: Centralized hub for profile management, onboarding reset, and full account data wiping.
+- ✅ Accessibility: Comprehensive `aria-label` coverage, keyboard focus states, and SR-compliant dialogs.
 
 ## 🛠️ Next Steps / Roadmap
 
-1. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
-2. **Smart Notifications:** Browser push notifications for upcoming deadlines.
-3. **Global Search:** Command palette (`Ctrl+K`) for instant project/task jumping.
+### 🔴 High Priority (Immediate)
+1. **Bulk Import Tool:** Implement a text-based uploader in Settings to create projects from newline-separated task lists.
+2. **Auto-clear Workflow:** Option to automatically move or archive completed tasks after a configurable time window.
+
+### 🔵 Low Priority (Analytics & Scale)
+3. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
+4. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
 
 ---
-*Last Updated: April 8, 2026*
+*Last Updated: April 12, 2026*
