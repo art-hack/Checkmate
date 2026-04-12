@@ -153,10 +153,6 @@ const CommandPalette: FC<CommandPaletteProps> = ({
                 >
                   <Plus className="w-4 h-4" />
                   <span>Create New Task...</span>
-                  <div className="flex items-center space-x-1 ml-auto">
-                    <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 group-aria-selected:bg-white/20 group-aria-selected:text-white transition-colors">Alt</kbd>
-                    <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px] font-bold text-slate-500 group-aria-selected:bg-white/20 group-aria-selected:text-white transition-colors">Q</kbd>
-                  </div>
                 </Command.Item>
                 <Command.Item 
                   onSelect={() => setPages([...pages, 'tasks'])}

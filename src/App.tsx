@@ -14,47 +14,22 @@ function App() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   
-  // Handle Global Shortcuts (Ctrl+K and Alt+Q)
+  // Handle Global Shortcuts (Ctrl+K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // 1. Ctrl+K (or Cmd+K) - Toggle Command Palette
-      // Use capture to beat browser address bar focus in some cases
+      // Use capture to beat browser address bar focus
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         e.stopPropagation();
         setIsPaletteOpen(prev => !prev);
-        return;
-      }
-
-      // 2. Alt+Q - Focus Board Quick Add
-      // Ignore if a modal/palette is already open
-      const isModalOpen = document.querySelector('[role="dialog"]') !== null || isPaletteOpen;
-      if (isModalOpen) return;
-
-      if (e.altKey && (e.key === 'q' || e.key === 'Q' || e.code === 'KeyQ')) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // If not on the board, switch to it
-        if (activeProjectId !== null) {
-          setActiveProjectId(null);
-        }
-
-        // Wait for potential layout switch and focus
-        setTimeout(() => {
-          const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
-          if (quickAddInput) {
-            quickAddInput.focus();
-            quickAddInput.select();
-          }
-        }, 200);
       }
     };
 
     // Use capture: true to ensure we catch the event before the browser defaults
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [activeProjectId, isPaletteOpen]);
+  }, []);
 
   const {
     projects,
