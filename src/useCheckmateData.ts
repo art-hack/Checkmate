@@ -318,9 +318,9 @@ export const useCheckmateData = (user: User | null) => {
   const handleInitializeSampleData = async () => {
     if (!user) return;
     
-    // 1. Create Sample Project
+    // 1. Create Chess-themed Sample Project
     const projectRef = await addDoc(projectsCol, {
-      name: '🚀 Project: Mission to Mars',
+      name: '♟️ Strategy: Grandmaster Path',
       ownerId: user.uid,
       createdAt: serverTimestamp(),
       completed: false,
@@ -328,11 +328,11 @@ export const useCheckmateData = (user: User | null) => {
     });
     const projectId = projectRef.id;
 
-    // 2. Create Parallel Checklists
+    // 2. Create Parallel Checklists (The Board setup)
     const checklistData = [
-      { name: '🛠️ Preparation', order: 1 },
-      { name: '🔥 Execution', order: 2 },
-      { name: '🛰️ Mission Control', order: 3 }
+      { name: '📖 Opening Theory', order: 1 },
+      { name: '🧩 Tactical Drills', order: 2 },
+      { name: '🏆 Tournament Prep', order: 3 }
     ];
 
     const checklistIds: string[] = [];
@@ -346,10 +346,10 @@ export const useCheckmateData = (user: User | null) => {
       checklistIds.push(cRef.id);
     }
 
-    // 3. Add Tasks
-    // Preparation Tasks
+    // 3. Add Tasks to showcase hierarchy and movement
+    // Opening Theory Tasks
     const t1 = await addDoc(tasksCol, {
-      text: 'Assemble the booster rocket',
+      text: 'Master the Sicilian Defense',
       completed: false,
       projectId,
       checklistId: checklistIds[0],
@@ -361,7 +361,7 @@ export const useCheckmateData = (user: User | null) => {
     });
 
     await addDoc(tasksCol, {
-      text: 'Check fuel cells',
+      text: 'Study the Najdorf Variation',
       completed: false,
       projectId,
       checklistId: checklistIds[0],
@@ -371,22 +371,42 @@ export const useCheckmateData = (user: User | null) => {
       createdAt: serverTimestamp()
     });
 
-    // Execution Tasks
     await addDoc(tasksCol, {
-      text: 'Ignition sequence start',
+      text: 'Review Queen\'s Gambit lines',
       completed: false,
       projectId,
-      checklistId: checklistIds[1],
+      checklistId: checklistIds[0],
       parentId: null,
       ownerId: user.uid,
-      order: 1,
-      createdAt: serverTimestamp(),
-      priority: 'medium'
+      order: 2,
+      createdAt: serverTimestamp()
     });
 
-    // Mission Control Tasks
+    // Tactical Drills (More items to show reordering)
+    const tacticalTasks = [
+      'Solve 50 puzzles on Lichess',
+      'Analyze 3 classic Tal games',
+      'Practice endgame patterns',
+      'Watch GothamChess recap'
+    ];
+
+    for (let i = 0; i < tacticalTasks.length; i++) {
+      await addDoc(tasksCol, {
+        text: tacticalTasks[i],
+        completed: false,
+        projectId,
+        checklistId: checklistIds[1],
+        parentId: null,
+        ownerId: user.uid,
+        order: i + 1,
+        createdAt: serverTimestamp(),
+        priority: i === 0 ? 'high' : 'medium'
+      });
+    }
+
+    // Tournament Prep
     await addDoc(tasksCol, {
-      text: 'Deploy solar panels',
+      text: 'Check tournament registration',
       completed: false,
       projectId,
       checklistId: checklistIds[2],
@@ -394,7 +414,7 @@ export const useCheckmateData = (user: User | null) => {
       ownerId: user.uid,
       order: 1,
       createdAt: serverTimestamp(),
-      dueDate: new Date(Date.now() + 86400000 * 2) // 2 days from now
+      dueDate: new Date(Date.now() + 86400000 * 3) // 3 days from now
     });
 
     return projectId;
