@@ -299,6 +299,91 @@ export const useCheckmateData = (user: User | null) => {
     });
   };
 
+  const handleInitializeSampleData = async () => {
+    if (!user) return;
+    
+    // 1. Create Sample Project
+    const projectRef = await addDoc(projectsCol, {
+      name: '🚀 Project: Mission to Mars',
+      ownerId: user.uid,
+      createdAt: serverTimestamp(),
+      completed: false,
+      progress: 0
+    });
+    const projectId = projectRef.id;
+
+    // 2. Create Parallel Checklists
+    const checklistData = [
+      { name: '🛠️ Preparation', order: 1 },
+      { name: '🔥 Execution', order: 2 },
+      { name: '🛰️ Mission Control', order: 3 }
+    ];
+
+    const checklistIds: string[] = [];
+    for (const c of checklistData) {
+      const cRef = await addDoc(checklistsCol, {
+        name: c.name,
+        projectId,
+        ownerId: user.uid,
+        order: c.order
+      });
+      checklistIds.push(cRef.id);
+    }
+
+    // 3. Add Tasks
+    // Preparation Tasks
+    const t1 = await addDoc(tasksCol, {
+      text: 'Assemble the booster rocket',
+      completed: false,
+      projectId,
+      checklistId: checklistIds[0],
+      parentId: null,
+      ownerId: user.uid,
+      order: 1,
+      createdAt: serverTimestamp(),
+      priority: 'high'
+    });
+
+    await addDoc(tasksCol, {
+      text: 'Check fuel cells',
+      completed: false,
+      projectId,
+      checklistId: checklistIds[0],
+      parentId: t1.id,
+      ownerId: user.uid,
+      order: 1,
+      createdAt: serverTimestamp()
+    });
+
+    // Execution Tasks
+    await addDoc(tasksCol, {
+      text: 'Ignition sequence start',
+      completed: false,
+      projectId,
+      checklistId: checklistIds[1],
+      parentId: null,
+      ownerId: user.uid,
+      order: 1,
+      createdAt: serverTimestamp(),
+      priority: 'medium'
+    });
+
+    // Mission Control Tasks
+    await addDoc(tasksCol, {
+      text: 'Deploy solar panels',
+      completed: false,
+      projectId,
+      checklistId: checklistIds[2],
+      parentId: null,
+      ownerId: user.uid,
+      order: 1,
+      createdAt: serverTimestamp(),
+      dueDate: new Date(Date.now() + 86400000 * 2) // 2 days from now
+    });
+
+    return projectId;
+  };
+
   return {
     projects,
     checklists,
@@ -319,6 +404,7 @@ export const useCheckmateData = (user: User | null) => {
     handleDeleteChecklist,
     handleEditChecklist,
     handleClearDoneTasks,
-    onAddChecklist
+    onAddChecklist,
+    handleInitializeSampleData
   };
 };

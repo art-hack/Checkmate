@@ -4,6 +4,7 @@ import { auth, signInWithGoogle, logout } from './firebase';
 import Dashboard from './Dashboard';
 import ProjectView from './ProjectView';
 import CommandPalette from './CommandPalette';
+import OnboardingModal from './OnboardingModal';
 import { useCheckmateData } from './useCheckmateData';
 import type { User } from './types';
 import { CheckSquare } from 'lucide-react';
@@ -13,6 +14,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   // Handle Global Shortcuts (Ctrl+K)
   useEffect(() => {
@@ -51,8 +53,33 @@ function App() {
     handleDeleteChecklist,
     handleEditChecklist,
     handleClearDoneTasks,
-    onAddChecklist
+    onAddChecklist,
+    handleInitializeSampleData
   } = useCheckmateData(user);
+
+  // Check for new user (no projects besides Inbox)
+  useEffect(() => {
+    if (!dataLoading && user && projects.length > 0) {
+      const hasOnlyInbox = projects.length === 1 && projects[0].isInbox;
+      const seenOnboarding = localStorage.getItem(`onboarding_seen_${user.uid}`);
+      
+      if (hasOnlyInbox && !seenOnboarding) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [dataLoading, user, projects]);
+
+  const onInitializeSample = async () => {
+    const newId = await handleInitializeSampleData();
+    if (newId) setActiveProjectId(newId);
+    setShowOnboarding(false);
+    if (user) localStorage.setItem(`onboarding_seen_${user.uid}`, 'true');
+  };
+
+  const closeOnboarding = () => {
+    setShowOnboarding(false);
+    if (user) localStorage.setItem(`onboarding_seen_${user.uid}`, 'true');
+  };
 
   // Theme State
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
@@ -147,6 +174,11 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col">
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onClose={closeOnboarding} 
+        onInitializeSample={onInitializeSample} 
+      />
       <CommandPalette 
         projects={projects}
         tasks={tasks}
