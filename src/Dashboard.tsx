@@ -65,33 +65,6 @@ const Dashboard: FC<DashboardProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'priority' | 'due'>('newest');
 
-  // Handle Global Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Alt + Q: Focus Quick Add
-      if (e.altKey && (e.key === 'q' || e.key === 'Q' || e.code === 'KeyQ')) {
-        e.preventDefault();
-        
-        // If not on the board, switch to it
-        if (activeProjectId !== null) {
-          onSelectProject(null);
-        }
-
-        // Wait for potential layout switch and focus
-        setTimeout(() => {
-          const quickAddInput = document.querySelector('[data-quick-add="true"]') as HTMLInputElement;
-          if (quickAddInput) {
-            quickAddInput.focus();
-            quickAddInput.select();
-          }
-        }, 200); // Slightly longer timeout for stability
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeProjectId, onSelectProject]);
-
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallNudge, setShowInstallNudge] = useState(false);

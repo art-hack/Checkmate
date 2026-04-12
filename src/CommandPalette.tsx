@@ -16,34 +16,32 @@ interface CommandPaletteProps {
   projects: Project[];
   tasks: Task[];
   onSelectProject: (projectId: string | null) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const CommandPalette: FC<CommandPaletteProps> = ({
   projects,
   tasks,
-  onSelectProject
+  onSelectProject,
+  isOpen,
+  onOpenChange
 }) => {
-  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [pages, setPages] = useState<string[]>([]);
   const page = pages[pages.length - 1];
 
-  // Toggle the menu when ⌘K or Ctrl+K is pressed
+  // Handle closing by cleaning up
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
-  }, []);
+    if (!isOpen) {
+      setSearch('');
+      setPages([]);
+    }
+  }, [isOpen]);
 
   const handleSelectProject = (projectId: string | null) => {
     onSelectProject(projectId);
-    setOpen(false);
+    onOpenChange(false);
   };
 
   const activeTasks = tasks.filter(t => !t.completed);
@@ -51,8 +49,8 @@ const CommandPalette: FC<CommandPaletteProps> = ({
 
   return (
     <Command.Dialog 
-      open={open} 
-      onOpenChange={setOpen} 
+      open={isOpen} 
+      onOpenChange={onOpenChange} 
       label="Command Palette"
       className="fixed inset-0 z-[500] flex items-start justify-center pt-[15vh] p-4 bg-slate-950/40 backdrop-blur-sm"
       onKeyDown={(e) => {
@@ -62,7 +60,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
             e.preventDefault();
             setPages((pages) => pages.slice(0, -1));
           } else {
-            setOpen(false);
+            onOpenChange(false);
           }
         }
         if (e.key === 'Backspace' && !search && pages.length > 0) {
@@ -140,7 +138,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
               <Command.Group heading="Tasks" className="px-2 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 <Command.Item 
                   onSelect={() => {
-                    setOpen(false);
+                    onOpenChange(false);
                     // Switch to board if not already there
                     onSelectProject(null);
                     setTimeout(() => {
