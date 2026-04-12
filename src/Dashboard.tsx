@@ -65,6 +65,23 @@ const Dashboard: FC<DashboardProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'priority' | 'due'>('newest');
 
+  // Handle Global Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt + N: Focus Quick Add
+      if (e.altKey && e.key === 'n') {
+        e.preventDefault();
+        const quickAddInput = document.querySelector('input[placeholder*="Quick-add"]') as HTMLInputElement;
+        if (quickAddInput) {
+          quickAddInput.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallNudge, setShowInstallNudge] = useState(false);

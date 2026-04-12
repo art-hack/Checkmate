@@ -3,6 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth, signInWithGoogle, logout } from './firebase';
 import Dashboard from './Dashboard';
 import ProjectView from './ProjectView';
+import CommandPalette from './CommandPalette';
 import { useCheckmateData } from './useCheckmateData';
 import type { User } from './types';
 import { CheckSquare } from 'lucide-react';
@@ -128,6 +129,12 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col">
+      <CommandPalette 
+        projects={projects}
+        tasks={tasks}
+        onSelectProject={setActiveProjectId}
+        onToggleTask={handleToggleTask}
+      />
       <Dashboard 
         user={user}
         projects={projects}
