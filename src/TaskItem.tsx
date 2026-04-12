@@ -16,7 +16,8 @@ import {
   Trash2,
   Calendar,
   Flag,
-  MoreHorizontal
+  MoreHorizontal,
+  ExternalLink
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -90,6 +91,49 @@ const TaskItem: FC<TaskItemProps> = ({
 
   const handleToggle = () => {
     onToggle(task.id);
+  };
+
+  const extractLinks = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.match(urlRegex) || [];
+  };
+
+  const renderTaskText = () => {
+    const links = extractLinks(task.text);
+    if (links.length === 0) return task.text;
+
+    let displayDescription = task.text;
+    links.forEach(link => {
+      displayDescription = displayDescription.replace(link, '').trim();
+    });
+
+    return (
+      <div className="flex flex-col">
+        {displayDescription && (
+          <span className={task.completed ? 'task-completed' : ''}>
+            {displayDescription}
+          </span>
+        )}
+        <div className="flex flex-wrap gap-1 mt-1">
+          {links.map((link, index) => (
+            <a
+              key={index}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center space-x-1 px-1.5 py-0.5 bg-action-indigo/10 text-action-indigo hover:bg-action-indigo hover:text-white rounded text-[10px] font-bold transition-all border border-action-indigo/20"
+              title={link}
+            >
+              <ExternalLink className="w-2.5 h-2.5" />
+              <span className="truncate max-w-[120px]">
+                {link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   const handleAddSubtask = (e: FormEvent) => {
@@ -210,7 +254,7 @@ const TaskItem: FC<TaskItemProps> = ({
                 onDoubleClick={() => setIsEditing(true)}
                 className={`flex-grow cursor-pointer whitespace-normal break-words min-w-0 py-0.5 text-sm text-slate-700 dark:text-slate-200 transition-colors ${task.completed ? 'task-completed' : ''} ${isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : ''}`}
               >
-                {task.text}
+                {renderTaskText()}
               </span>
             )}
 
