@@ -56,18 +56,45 @@ const SettingsDialog: FC<SettingsDialogProps> = ({
   if (!isOpen) return null;
 
   const handleExport = () => {
-    const data = {
-      exportDate: new Date().toISOString(),
-      user: { uid: user.uid, email: user.email },
-      projects,
-      checklists,
-      tasks
+    // 1. Recursive helper to get tasks without IDs
+    const getTasksTree = (parentId: string | null, checklistId: string): any[] => {
+      return tasks
+        .filter(t => t.checklistId === checklistId && t.parentId === parentId)
+        .sort((a, b) => a.order - b.order)
+        .map(t => ({
+          text: t.text,
+          completed: t.completed,
+          priority: t.priority || 'low',
+          dueDate: t.dueDate || null,
+          completedAt: t.completedAt || null,
+          subtasks: getTasksTree(t.id, checklistId)
+        }));
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+    // 2. Build hierarchical data structure
+    const exportedProjects = projects.map(p => ({
+      name: p.name,
+      isInbox: !!p.isInbox,
+      checklists: checklists
+        .filter(c => c.projectId === p.id)
+        .sort((a, b) => a.order - b.order)
+        .map(c => ({
+          name: c.name,
+          tasks: getTasksTree(null, c.id)
+        }))
+    }));
+
+    const exportData = {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      projects: exportedProjects
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `checkmate-export-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `checkmate-clean-export-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
