@@ -45,14 +45,17 @@ const steps = [
 
 const OnboardingModal: FC<OnboardingModalProps> = ({ isOpen, onClose, onInitializeSample }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   if (!isOpen) return null;
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onInitializeSample();
+      setIsInitializing(true);
+      await onInitializeSample();
+      // App.tsx handles closing
     }
   };
 
@@ -131,10 +134,13 @@ const OnboardingModal: FC<OnboardingModalProps> = ({ isOpen, onClose, onInitiali
 
               <button 
                 onClick={nextStep}
-                className="flex items-center space-x-2 bg-action-indigo text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none"
+                disabled={isInitializing}
+                className={`flex items-center space-x-2 bg-action-indigo text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none ${isInitializing ? 'opacity-70 cursor-wait' : ''}`}
               >
-                <span>{currentStep === steps.length - 1 ? 'Start Mission' : 'Continue'}</span>
-                <ChevronRight className="w-5 h-5" />
+                <span>
+                  {isInitializing ? 'Starting...' : currentStep === steps.length - 1 ? 'Start Mission' : 'Continue'}
+                </span>
+                {!isInitializing && <ChevronRight className="w-5 h-5" />}
               </button>
             </div>
             
