@@ -79,7 +79,7 @@ const SortableChecklist: FC<SortableChecklistProps> = ({
     <div 
       ref={setNodeRef}
       style={style}
-      className="min-w-[320px] max-w-[400px] flex-shrink-0 glass-card rounded-2xl p-5 flex flex-col h-full transition-colors relative"
+      className="w-[360px] flex-shrink-0 glass-card rounded-2xl p-5 flex flex-col h-full transition-colors relative"
     >
       <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3 group flex-shrink-0">
         <div className="flex items-center flex-grow min-w-0">
@@ -448,7 +448,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                 if (completedTasks.length === 0) return null;
 
                 return (
-                  <div key={`done-${checklist.id}`} className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
+                  <div key={`done-${checklist.id}`} className="w-[360px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: {checklist.name}</span>
                     </h4>
@@ -480,7 +480,7 @@ const ProjectView: FC<ProjectViewProps> = ({
                 if (orphanedTasks.length === 0) return null;
 
                 return (
-                  <div key="done-orphaned" className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
+                  <div key="done-orphaned" className="w-[360px] flex-shrink-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-slate-800 h-fit transition-colors">   
                     <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 px-2 flex items-center justify-between">
                       <span>From: Uncategorized</span>
                     </h4>
