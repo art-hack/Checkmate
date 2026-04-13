@@ -59,9 +59,19 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 
 ## 🛠️ Next Steps / Roadmap
 
+### 🔴 High Priority (Immediate)
+1. **Performance Tuning:** Wrap expensive filter/sort operations in `useMemo` within `Dashboard.tsx` and `ProjectView.tsx` to prevent UI lag.
+2. **Duplication Optimization:** Refactor `handleDuplicateProject` in `useCheckmateData.ts` to use Firestore `writeBatch` for atomic, high-speed copying.
+3. **Workflow Refinement:** Remove `tasks.length` from the `handleAutoClear` effect in `App.tsx` to prevent redundant check cycles.
+
+### 🟡 Medium Priority (Enhancement)
+4. **State Management:** Implement React Context or Zustand to eliminate severe prop drilling from `App.tsx` down to `TaskItem.tsx`.
+5. **Recursive Safety:** Add depth-limiting or virtualization to `TaskItem.tsx` to ensure stability with deep subtask trees.
+
 ### 🔵 Low Priority (Analytics & Scale)
-1. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
-2. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
+6. **Data Archiving:** Transition `onSnapshot` listeners to time-boxed or paginated queries to handle long-term data growth efficiently.
+7. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
+8. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
 
 ---
 *Last Updated: April 12, 2026*
