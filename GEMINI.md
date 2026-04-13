@@ -54,16 +54,14 @@ This file serves as the primary context for Gemini CLI sessions. It summarizes t
 - ✅ Onboarding Experience: Visual welcome tour for new users with a Chess-themed sample project ("Grandmaster Path").
 - ✅ Settings Panel: Centralized hub for profile management, onboarding reset, data export, and full account wiping.
 - ✅ Data Portability: JSON export tool and bulk task list importer for seamless project creation.
+- ✅ Auto-clear Workflow: Toggleable setting to automatically remove completed tasks after a configurable time window.
 - ✅ Accessibility: Comprehensive `aria-label` coverage, keyboard focus states, and SR-compliant dialogs.
 
 ## 🛠️ Next Steps / Roadmap
 
-### 🔴 High Priority (Immediate)
-1. **Auto-clear Workflow:** Option to automatically move or archive completed tasks after a configurable time window.
-
 ### 🔵 Low Priority (Analytics & Scale)
-2. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
-3. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
+1. **Custom Subdomain Deployment:** Transition hosting from default `.web.app` to a dedicated subdomain.
+2. **Project Stats:** Add detailed analytics (velocity tracking, completion trends).
 
 ---
 *Last Updated: April 12, 2026*
